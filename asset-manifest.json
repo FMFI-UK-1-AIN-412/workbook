@@ -1,7 +1,7 @@
 {
   "files": {
-    "main.css": "/workbook/static/css/main.1756e68a.css",
-    "main.js": "/workbook/static/js/main.cc281da3.js",
+    "main.css": "/workbook/static/css/main.efd99c6b.css",
+    "main.js": "/workbook/static/js/main.7a245467.js",
     "static/js/787.8f908bc3.chunk.js": "/workbook/static/js/787.8f908bc3.chunk.js",
     "static/media/fa-solid-900.svg": "/workbook/static/media/fa-solid-900.8d8e2a00866d910a8c8c.svg",
     "static/media/fa-brands-400.svg": "/workbook/static/media/fa-brands-400.eb5a92cd6717e6b29887.svg",
@@ -79,12 +79,12 @@
     "static/media/KaTeX_Size3-Regular.woff": "/workbook/static/media/KaTeX_Size3-Regular.7947224e8a9914fa332b.woff",
     "static/media/KaTeX_Size3-Regular.woff2": "/workbook/static/media/KaTeX_Size3-Regular.e1951519f6f0596f7356.woff2",
     "index.html": "/workbook/index.html",
-    "main.1756e68a.css.map": "/workbook/static/css/main.1756e68a.css.map",
-    "main.cc281da3.js.map": "/workbook/static/js/main.cc281da3.js.map",
+    "main.efd99c6b.css.map": "/workbook/static/css/main.efd99c6b.css.map",
+    "main.7a245467.js.map": "/workbook/static/js/main.7a245467.js.map",
     "787.8f908bc3.chunk.js.map": "/workbook/static/js/787.8f908bc3.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.1756e68a.css",
-    "static/js/main.cc281da3.js"
+    "static/css/main.efd99c6b.css",
+    "static/js/main.7a245467.js"
   ]
 }
