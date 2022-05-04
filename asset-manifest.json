@@ -1,7 +1,7 @@
 {
   "files": {
     "main.css": "/workbook/static/css/main.36466ec7.css",
-    "main.js": "/workbook/static/js/main.887b0871.js",
+    "main.js": "/workbook/static/js/main.fe22c90f.js",
     "static/js/787.8f908bc3.chunk.js": "/workbook/static/js/787.8f908bc3.chunk.js",
     "static/media/fa-solid-900.svg": "/workbook/static/media/fa-solid-900.8d8e2a00866d910a8c8c.svg",
     "static/media/fa-brands-400.svg": "/workbook/static/media/fa-brands-400.eb5a92cd6717e6b29887.svg",
@@ -80,11 +80,11 @@
     "static/media/KaTeX_Size3-Regular.woff2": "/workbook/static/media/KaTeX_Size3-Regular.e1951519f6f0596f7356.woff2",
     "index.html": "/workbook/index.html",
     "main.36466ec7.css.map": "/workbook/static/css/main.36466ec7.css.map",
-    "main.887b0871.js.map": "/workbook/static/js/main.887b0871.js.map",
+    "main.fe22c90f.js.map": "/workbook/static/js/main.fe22c90f.js.map",
     "787.8f908bc3.chunk.js.map": "/workbook/static/js/787.8f908bc3.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.36466ec7.css",
-    "static/js/main.887b0871.js"
+    "static/js/main.fe22c90f.js"
   ]
 }
