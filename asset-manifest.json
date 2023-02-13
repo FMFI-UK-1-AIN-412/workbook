@@ -1,6 +1,6 @@
 {
   "files": {
-    "main.css": "/workbook/static/css/main.b0540c2e.css",
+    "main.css": "/workbook/static/css/main.c069cc31.css",
     "main.js": "/workbook/static/js/main.7598991e.js",
     "static/js/787.8f908bc3.chunk.js": "/workbook/static/js/787.8f908bc3.chunk.js",
     "static/media/fa-solid-900.svg": "/workbook/static/media/fa-solid-900.8d8e2a00866d910a8c8c.svg",
@@ -79,12 +79,12 @@
     "static/media/KaTeX_Size3-Regular.woff": "/workbook/static/media/KaTeX_Size3-Regular.7947224e8a9914fa332b.woff",
     "static/media/KaTeX_Size3-Regular.woff2": "/workbook/static/media/KaTeX_Size3-Regular.e1951519f6f0596f7356.woff2",
     "index.html": "/workbook/index.html",
-    "main.b0540c2e.css.map": "/workbook/static/css/main.b0540c2e.css.map",
+    "main.c069cc31.css.map": "/workbook/static/css/main.c069cc31.css.map",
     "main.7598991e.js.map": "/workbook/static/js/main.7598991e.js.map",
     "787.8f908bc3.chunk.js.map": "/workbook/static/js/787.8f908bc3.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.b0540c2e.css",
+    "static/css/main.c069cc31.css",
     "static/js/main.7598991e.js"
   ]
 }
