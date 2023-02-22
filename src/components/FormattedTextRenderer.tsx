@@ -12,6 +12,7 @@ import classNames from 'classnames/dedupe';
 import 'katex/dist/katex.min.css';
 import styles from './FormattedTextRenderer.module.scss'
 import mdDirectives from './md-directives';
+// import remarkDirectiveAttrs from './md-directives/attrsDirectivePlugin';
 
 export interface FormattedTextRendererProps {
   className?: string,
@@ -55,6 +56,7 @@ export default function FormattedTextRenderer(props: FormattedTextRendererProps)
         remarkGfm,
         remarkDefinitionList,
         remarkDirective,
+        // remarkDirectiveAttrs,
         remarkDirectiveRehype,
       ]}
       remarkRehypeOptions={{handlers: defListHastHandlers}}
