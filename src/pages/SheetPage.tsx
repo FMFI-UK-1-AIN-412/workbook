@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ButtonGroup, ButtonToolbar, Container, Dropdown } from "react-bootstrap";
 import { useLocation, useParams } from "react-router-dom";
 import { FileEarmarkRuledFill, GearFill } from "react-bootstrap-icons";
@@ -20,7 +20,9 @@ import classNames from 'classnames/dedupe';
 import styles from './SheetPage.module.scss';
 import { loadSheet, storageSelectors } from "../features/sheetStorage/storageSlice";
 import { GithubFileLocation } from "../storageWorker/githubStorage/types";
-import { downloadSheet } from "../features/sheet/slice/sheetSlice";
+import { downloadSheet, sheetSelectors } from "../features/sheet/slice/sheetSlice";
+import { Gh1CustomState } from "../storageWorker/githubStorage1/types";
+import RecomendedBranchModal from "../features/sheetStorage/github/RecomendedBranchModal";
 
 function SheetPage() {
   const authState = useAppSelector(authSelectors.authState);
@@ -29,7 +31,8 @@ function SheetPage() {
   const location = useLocation();
   const params = useParams();
   const { owner, repo } = params;
-  const repoParams = parseGithubUrlPath(params['*'] || '');
+  const url = params['*']
+  const repoParams = useMemo(() => parseGithubUrlPath(url || ''), [ url ]);
 
   const ghLocation = useRef<GithubFileLocation | undefined>(undefined);
   const dispatch = useAppDispatch();
@@ -37,10 +40,11 @@ function SheetPage() {
   useEffect(() => {
     let lastLoaded: GithubFileLocation | undefined = undefined
     if (ghLocation.current !== undefined && JSON.stringify(ghLocation.current) !== JSON.stringify(lastLoaded)) {
+      console.log('loading shhet')
       lastLoaded = { ...ghLocation.current };
       dispatch(loadSheet('github1', ghLocation.current))
     }
-  }, [ghLocation, dispatch]);
+  }, [repoParams, dispatch]);
 
   const [settingsTab, setSettingsTab] = useState<SettingTab>('NONE')
   const [mergeSheetModal, setMergeSheetModal] = useState(false);
@@ -62,6 +66,7 @@ function SheetPage() {
           <MergeSheetModal show={mergeSheetModal} onClose={() => setMergeSheetModal(false)} />
           <SheetSettingsModal tab={settingsTab} onClose={() => setSettingsTab('NONE')} />
           <SaveErrorModal />
+          <RecomendedBranchModal addr={ghLocation.current} />
 
           <div className={classNames("p-3 border-bottom d-flex align-items-center flex-wrap position-sticky bg-body", styles.sheetToolbar)}>
             <div style={{}}>

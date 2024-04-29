@@ -1,10 +1,9 @@
-import { AnyAction, createEntityAdapter, createSelector, createSlice, EntityState, PayloadAction } from "@reduxjs/toolkit";
+import { AnyAction, createEntityAdapter, createSlice, EntityState, PayloadAction } from "@reduxjs/toolkit";
 import undoable, { includeAction } from "redux-undo";
 import { AppDispatch, RootState } from '../../../app/store'
-import { ContextExtension, LogicContext, cellContext, clearContextMemo } from "./logicContext";
-import { deserializeWorkbook, serializeWorkbook, testSheetIntegrity } from "./workbookFormat";
+import { ContextExtension, cellContext, clearContextMemo } from "./logicContext";
+import { deserializeWorkbook, serializeWorkbook } from "./workbookFormat";
 import { WritableDraft } from "immer/dist/internal";
-import { deserialize } from "v8";
 
 export interface CellComment {
   id: number,
