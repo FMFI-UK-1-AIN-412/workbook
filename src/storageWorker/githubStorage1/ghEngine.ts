@@ -2,7 +2,7 @@ import { AutosavePayload, LoadResult } from "../workerApi";
 import { MayFail, TMayFail, success, err, ExtractErrorTypeV } from "./mayfail";
 import { Base64 } from "js-base64";
 import sha1 from "sha1";
-import { Gh1ApiError, Gh1AutosaveErr, Gh1CustomState, Gh1MergeErr, Gh1OpenErr, Gh1ApiErrorEx } from "./types";
+import { Gh1ApiError, Gh1AutosaveErr, Gh1CustomState, Gh1MergeErr, Gh1OpenErr, Gh1ApiErrorEx, Gh1HandInErr } from "./types";
 import { GhContext } from "./ghContext";
 
 export interface GhOpenPayload {
@@ -11,6 +11,11 @@ export interface GhOpenPayload {
   path: string,
   ref: string,
   openAs?: string,
+}
+
+export interface HandInPayload {
+  addr: GhOpenPayload,
+  handInBranch: string
 }
 
 type OpenResult = TMayFail<{
@@ -41,6 +46,12 @@ type DeleteSessionResult = TMayFail<{
   customError: Gh1ApiError
 }>
 
+type HandInResult = TMayFail<{
+  customState: Gh1CustomState
+}, {
+  customError: Gh1HandInErr
+}>
+
 export abstract class GhEngineState {
   context: GhContext
   stateName: string
@@ -52,6 +63,7 @@ export abstract class GhEngineState {
   abstract open(addr: GhOpenPayload): Promise<OpenResult>;
   abstract autosave(payload: AutosavePayload): Promise<AutosaveResult>;
   abstract merge(): Promise<MergeResult>;
+  abstract handIn(payload: HandInPayload): Promise<HandInResult>;
   abstract deleteMergedSession(): Promise<DeleteSessionResult>
 }
 
@@ -118,6 +130,9 @@ class Initialized extends GhEngineState {
   async merge(): Promise<MergeResult> {
     throw new Error("Invalid action");
   }
+  async handIn(): Promise<HandInResult> {
+    throw new Error("Invalid action");
+  }
   async deleteMergedSession(): Promise<DeleteSessionResult> {
     throw new Error("Invalid action");
   }
@@ -139,7 +154,7 @@ class UndeletedSession extends GhEngineState {
     return newState.open(addr);
   }
   async autosave(payload: AutosavePayload): Promise<AutosaveResult> {
-    return <AutosaveResult>MayFail.Error({
+    return MayFail.Error({
       customError: {
         reason: "merged_session",
         message: "Session branch was merged and must be deleted",
@@ -148,6 +163,9 @@ class UndeletedSession extends GhEngineState {
     })
   }
   merge(): Promise<MergeResult> {
+    throw new Error("Invalid action");
+  }
+  async handIn(): Promise<HandInResult> {
     throw new Error("Invalid action");
   }
   async deleteMergedSession(): Promise<DeleteSessionResult> {
@@ -187,7 +205,7 @@ class SessionLess extends GhEngineState {
   async autosave(payload: AutosavePayload): Promise<AutosaveResult> {
     return await MayFail.do<Gh1AutosaveErr | Gh1ApiErrorEx>()
       .assignV('sessionBranch', await this.context.createSessionBranch({
-        addr: this.addr, 
+        addr: this.addr,
         baseCommitId: this.baseBranch.headId
       }))
       .transformError<ExtractErrorTypeV<AutosaveResult>>(error => ({
@@ -204,6 +222,15 @@ class SessionLess extends GhEngineState {
   }
   async merge(): Promise<MergeResult> {
     throw new Error("Invalid action");
+  }
+  async handIn(payload: HandInPayload): Promise<HandInResult> {
+    return (await this.context.handIn(payload))
+      .retV(MayFail.Success({
+        customState: this.context.customState
+      }))
+      .transformError<{ customError: Gh1HandInErr }>(error => ({
+        customError: { ...error, apiError: undefined }
+      }))
   }
   async deleteMergedSession(): Promise<DeleteSessionResult> {
     throw new Error("Invalid action");
@@ -289,6 +316,15 @@ class SessionFull extends GhEngineState {
         }
       })
   }
+  async handIn(payload: HandInPayload): Promise<HandInResult> {
+    return (await this.context.handIn(payload))
+      .retV(MayFail.Success({
+        customState: this.context.customState
+      }))
+      .transformError<{ customError: Gh1HandInErr }>(error => ({
+        customError: { ...error, apiError: undefined }
+      }))
+  }
   async deleteMergedSession(): Promise<DeleteSessionResult> {
     throw new Error("Invalid action")
   }
@@ -309,6 +345,9 @@ export class GithubEngine {
   }
   async deleteMergedSessionCmd() {
     return this.state.deleteMergedSession()
+  }
+  async handInTask(payload: HandInPayload) {
+    return this.state.handIn(payload);
   }
   async autosaveTask(payload: AutosavePayload) {
     return this.state.autosave(payload)

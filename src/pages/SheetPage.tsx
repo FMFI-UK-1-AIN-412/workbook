@@ -20,9 +20,9 @@ import classNames from 'classnames/dedupe';
 import styles from './SheetPage.module.scss';
 import { loadSheet, storageSelectors } from "../features/sheetStorage/storageSlice";
 import { GithubFileLocation } from "../storageWorker/githubStorage/types";
-import { downloadSheet, sheetSelectors } from "../features/sheet/slice/sheetSlice";
-import { Gh1CustomState } from "../storageWorker/githubStorage1/types";
+import { downloadSheet } from "../features/sheet/slice/sheetSlice";
 import RecomendedBranchModal from "../features/sheetStorage/github/RecomendedBranchModal";
+import HandInButton from "../features/sheetStorage/github/HandInButton";
 
 function SheetPage() {
   const authState = useAppSelector(authSelectors.authState);
@@ -80,6 +80,7 @@ function SheetPage() {
               <UndoRedoButtonGroup />
               <ButtonGroup className="me-2">
                 <MergeButton />
+                <HandInButton addr={ghLocation.current} />
               </ButtonGroup>
               <ButtonGroup>
                 <Dropdown>

@@ -4,8 +4,8 @@ export function pathURIEncode(path: string) {
   return path.split('/').map(p => encodeURIComponent(p)).reduce((p, c) => `${p}/${c}`);
 }
 
-export function getSessionBranchName(fileInfo: { owner: string, repo: string, path: string, ref: string }) {
-  const { path, ref } = fileInfo;
+export function getSessionBranchName(fileInfo: { owner: string, repo: string, path: string, ref: string, openAs?: string }) {
+  const { path, ref, openAs } = fileInfo;
   const getName = (p: string) => {
     const f = p.split('/').pop()?.split('.');
     let name = f ? (f.length === 1 ? f[0] : f.slice(0, -1).join('.')) : '';
@@ -21,7 +21,7 @@ export function getSessionBranchName(fileInfo: { owner: string, repo: string, pa
     name = name.replace(' ', '-');
     return name;
   }
-  return `${ref}_session_${getName(path)}_${sha1(path)}`;
+  return `${ref}_session_${getName(path)}_${sha1(path)}${openAs ? `_${openAs}` : ''}`;
 }
 
 export function isSessionBranchName(name: string) {

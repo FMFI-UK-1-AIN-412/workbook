@@ -36,6 +36,11 @@ export type Gh1MergeErr = {
   pullUrl: string
 }
 
+export type Gh1HandInErr = {
+  reason: 'no_parent',
+  message: string,
+} | Gh1ApiError
+
 export interface Gh1CustomState {
   canMerge: boolean,
   undeletedMergedSession: boolean,
