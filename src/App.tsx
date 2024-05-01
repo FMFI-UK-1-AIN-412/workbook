@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import React, { useCallback, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, createBrowserRouter, RouterProvider } from 'react-router-dom';
 import "bootstrap/dist/css/bootstrap.min.css";
 import Navigation from './pages/Navigation';
 import SheetPage from './pages/SheetPage';
@@ -28,8 +28,8 @@ function App() {
     }
   }, [user, tokenState])
 
-  return (
-    <BrowserRouter basename={config.frontend.basePath}>
+  const Root = useCallback(() => (
+    <>
       <Navigation />
       <Routes>
         <Route path='*' element={<Err404Page />} />
@@ -37,13 +37,20 @@ function App() {
         <Route path="/login/*" element={<LoginPage />} />
         <Route path="/repos" element={<RepoListPage />} />
         <Route path="/repos/:page" element={<RepoListPage />} />
-        <Route path="/repo/:owner/:repo" element={<RepoPage />} />
         <Route path="/repo/:owner/:repo/*" element={<RepoPage />} />
         <Route path="/sheet/:owner/:repo/*" element={<SheetPage />} />
         <Route path="/logout" element={<LogoutPage />} />
       </Routes>
-    </BrowserRouter>
-  );
+    </>
+  ), []);
+
+  const router = createBrowserRouter([
+    { path: "*", element: <Root /> },
+  ], {
+    basename: config.frontend.basePath
+  });
+
+  return <RouterProvider router={router} />;
 }
 
 export default App;
