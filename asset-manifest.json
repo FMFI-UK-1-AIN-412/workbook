@@ -1,8 +1,10 @@
 {
   "files": {
-    "main.css": "/workbook/static/css/main.d01cd509.css",
-    "main.js": "/workbook/static/js/main.e1480055.js",
-    "static/js/787.8f908bc3.chunk.js": "/workbook/static/js/787.8f908bc3.chunk.js",
+    "main.css": "/workbook/static/css/main.0edacd84.css",
+    "main.js": "/workbook/static/js/main.1c773eb0.js",
+    "static/js/420.a6dc4af0.chunk.js": "/workbook/static/js/420.a6dc4af0.chunk.js",
+    "static/js/787.ead33d1f.chunk.js": "/workbook/static/js/787.ead33d1f.chunk.js",
+    "static/js/22.d726223b.chunk.js": "/workbook/static/js/22.d726223b.chunk.js",
     "static/media/fa-solid-900.svg": "/workbook/static/media/fa-solid-900.8d8e2a00866d910a8c8c.svg",
     "static/media/fa-brands-400.svg": "/workbook/static/media/fa-brands-400.eb5a92cd6717e6b29887.svg",
     "static/media/fa-solid-900.eot": "/workbook/static/media/fa-solid-900.d7e6f1010d4c57e9fce1.eot",
@@ -79,12 +81,14 @@
     "static/media/KaTeX_Size3-Regular.woff": "/workbook/static/media/KaTeX_Size3-Regular.7947224e8a9914fa332b.woff",
     "static/media/KaTeX_Size3-Regular.woff2": "/workbook/static/media/KaTeX_Size3-Regular.e1951519f6f0596f7356.woff2",
     "index.html": "/workbook/index.html",
-    "main.d01cd509.css.map": "/workbook/static/css/main.d01cd509.css.map",
-    "main.e1480055.js.map": "/workbook/static/js/main.e1480055.js.map",
-    "787.8f908bc3.chunk.js.map": "/workbook/static/js/787.8f908bc3.chunk.js.map"
+    "main.0edacd84.css.map": "/workbook/static/css/main.0edacd84.css.map",
+    "main.1c773eb0.js.map": "/workbook/static/js/main.1c773eb0.js.map",
+    "420.a6dc4af0.chunk.js.map": "/workbook/static/js/420.a6dc4af0.chunk.js.map",
+    "787.ead33d1f.chunk.js.map": "/workbook/static/js/787.ead33d1f.chunk.js.map",
+    "22.d726223b.chunk.js.map": "/workbook/static/js/22.d726223b.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.d01cd509.css",
-    "static/js/main.e1480055.js"
+    "static/css/main.0edacd84.css",
+    "static/js/main.1c773eb0.js"
   ]
 }
