@@ -13,6 +13,7 @@ import Err404Page from './pages/Err404Page';
 import LoginPage from './pages/LoginPage';
 
 import config from './config.json';
+import ExercisesPage from './pages/ExercisesPage';
 
 function App() {
   const user = useAppSelector(authSelectors.user);
@@ -26,18 +27,19 @@ function App() {
     if (user && tokenState === 'tokenTested' && accessToken) {
       saveAuthState(user, accessToken);
     }
-  }, [user, tokenState])
+  }, [user, tokenState, accessToken])
 
   const Root = useCallback(() => (
     <>
       <Navigation />
       <Routes>
         <Route path='*' element={<Err404Page />} />
-        <Route path="/" element={<Navigate to="/repos" />} />
+        <Route path="/" element={<Navigate to="/workbooks" />} />
         <Route path="/login/*" element={<LoginPage />} />
         <Route path="/repos" element={<RepoListPage />} />
         <Route path="/repos/:page" element={<RepoListPage />} />
         <Route path="/repo/:owner/:repo/*" element={<RepoPage />} />
+        <Route path="/workbooks" element={<ExercisesPage />} />
         <Route path="/sheet/:owner/:repo/*" element={<SheetPage />} />
         <Route path="/logout" element={<LogoutPage />} />
       </Routes>
