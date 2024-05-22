@@ -1,7 +1,7 @@
 import { Octokit, RequestError } from "octokit"
 import { MayFail, TMayFail, err, success } from "./mayfail"
 import { Gh1ApiError, Gh1ApiErrorEx, Gh1AutosaveErr, Gh1CustomState, Gh1MergeErr, Gh1OpenErr, Gh1HandInErr } from "./types"
-import { GhEngineState, GhOpenPayload } from "./ghEngine"
+import { GhEngineState, GhOpenPayload, HandInPayload } from "./ghEngine"
 import { getSessionBranchName, pathURIEncode } from "../githubStorage/utils"
 import { Base64 } from "js-base64"
 
@@ -55,9 +55,9 @@ export class GhContext {
     }
   }
 
-  async handIn(args: { addr: GhOpenPayload, handInBranch: string }) {
+  async handIn(args: HandInPayload & {  addr: GhOpenPayload }) {
     const { owner, repo, ref } = args.addr;
-    const { handInBranch } = args;
+    const { handInBranch, title, body } = args;
     const operation = MayFail.do<Gh1HandInErr | Gh1ApiErrorEx>()
       .assignV('repoInfo', await octoProm(
         this.octokit.rest.repos.get({ owner, repo })
@@ -72,9 +72,10 @@ export class GhContext {
         }
         return octoProm(
           this.octokit.rest.pulls.create({
-            owner, repo,
+            owner: parent.owner.login, repo,
             base: handInBranch,
-            head: ref,
+            head: `${owner}:${ref}`,
+            title, body
           })
         )
       })

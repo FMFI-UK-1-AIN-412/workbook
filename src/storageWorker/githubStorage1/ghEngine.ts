@@ -14,8 +14,9 @@ export interface GhOpenPayload {
 }
 
 export interface HandInPayload {
-  addr: GhOpenPayload,
   handInBranch: string
+  title?: string,
+  body?: string,
 }
 
 type OpenResult = TMayFail<{
@@ -224,7 +225,7 @@ class SessionLess extends GhEngineState {
     throw new Error("Invalid action");
   }
   async handIn(payload: HandInPayload): Promise<HandInResult> {
-    return (await this.context.handIn(payload))
+    return (await this.context.handIn({addr: this.addr, ...payload}))
       .retV(MayFail.Success({
         customState: this.context.customState
       }))
@@ -317,7 +318,7 @@ class SessionFull extends GhEngineState {
       })
   }
   async handIn(payload: HandInPayload): Promise<HandInResult> {
-    return (await this.context.handIn(payload))
+    return (await this.context.handIn({addr: this.addr, ...payload}))
       .retV(MayFail.Success({
         customState: this.context.customState
       }))
