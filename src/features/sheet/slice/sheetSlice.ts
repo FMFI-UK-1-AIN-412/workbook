@@ -392,6 +392,7 @@ export interface CellLocator {
 
 /* Selectors */
 export const sheetSelectors = {
+  filename: (state: RootState) => state.sheet.present.filename,
   state: (state: RootState) => state.sheet.present.state,
   sheetId: (state: RootState) => state.sheet.present.localState.sheetId,
   error: (state: RootState) => state.sheet.present.errorMessage,

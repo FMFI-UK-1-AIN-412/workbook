@@ -243,6 +243,10 @@ export const storageSelectors = {
       ? undefined
       : taskById[taskId]
   }),
+  task: (id: number) => (state: RootState) => {
+    const task = state.storage.taskById[id];
+    return task === undefined ? 'unknown_task' : task
+  },
   taskState: (id: number) => (state: RootState) => {
     const task = state.storage.taskById[id];
     return task === undefined ? 'unknown_task' : task.state
