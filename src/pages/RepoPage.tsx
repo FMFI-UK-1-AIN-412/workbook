@@ -45,7 +45,7 @@ export function parseGithubUrlPath(urlPath: string): {branch?: string, type: 'fi
   }
 }
 
-export function makeRepoLink(filepath: string, fileType: 'file' | 'dir', owner: string, repo: string, branch?: string): string {
+export function makeRepoLink(filepath: string, fileType: 'file' | 'dir', owner: string, repo: string, branch?: string, openAs?: string): string {
   const type = fileType === 'file' ? 'blob' : 'tree';
   
   if (filepath === '/' && !branch) {
@@ -59,10 +59,11 @@ export function makeRepoLink(filepath: string, fileType: 'file' | 'dir', owner: 
   const { extension } = parseFilepath(filepath);
   const ePath = pathURIEncode(filepath);
   if (extension === 'workbook') {
-    return `/sheet/${owner}/${repo}/${type}/${bPart}${ePath}`;
+    var url = `/sheet/${owner}/${repo}/${type}/${bPart}${ePath}`;
   } else {
-    return `/repo/${owner}/${repo}/${type}/${bPart}${ePath}`;
+    var url = `/repo/${owner}/${repo}/${type}/${bPart}${ePath}`;
   }
+  return openAs === undefined ? url : `${url}?openAs=${openAs}`
 }
 
 export function parseFilepath(filepath: string): {filename: string, extension: string} {

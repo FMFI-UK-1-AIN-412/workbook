@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ButtonGroup, ButtonToolbar, Container, Dropdown } from "react-bootstrap";
-import { useLocation, useParams } from "react-router-dom";
+import { useLocation, useParams, useSearchParams } from "react-router-dom";
 import { FileEarmarkRuledFill, GearFill } from "react-bootstrap-icons";
 import { authSelectors } from "../features/auth/authSlice";
 import { useAppDispatch, useAppSelector } from "../app/hooks";
@@ -19,11 +19,11 @@ import UndoRedoButtonGroup from "../features/sheet/UndoRedo";
 import classNames from 'classnames/dedupe';
 import styles from './SheetPage.module.scss';
 import { loadSheet, storageSelectors } from "../features/sheetStorage/storageSlice";
-import { GithubFileLocation } from "../storageWorker/githubStorage/types";
 import { downloadSheet, importFromFile } from "../features/sheet/slice/sheetSlice";
 import RecomendedBranchModal from "../features/sheetStorage/github/RecomendedBranchModal";
 import HandInButton from "../features/sheetStorage/github/HandInButton";
 import { StorageNavigationBlocker } from "../features/sheetStorage/StorageNavigationBlocker";
+import { GhOpenPayload } from "../storageWorker/githubStorage1/ghEngine";
 
 function SheetPage() {
   const authState = useAppSelector(authSelectors.authState);
@@ -34,12 +34,12 @@ function SheetPage() {
   const { owner, repo } = params;
   const url = params['*']
   const repoParams = useMemo(() => parseGithubUrlPath(url || ''), [url]);
-
-  const ghLocation = useRef<GithubFileLocation | undefined>(undefined);
+  let [searchParams] = useSearchParams();
+  const ghLocation = useRef<GhOpenPayload | undefined>(undefined);
   const dispatch = useAppDispatch();
 
   useEffect(() => {
-    let lastLoaded: GithubFileLocation | undefined = undefined
+    let lastLoaded: GhOpenPayload | undefined = undefined
     if (ghLocation.current !== undefined && JSON.stringify(ghLocation.current) !== JSON.stringify(lastLoaded)) {
       console.log('loading shhet')
       lastLoaded = { ...ghLocation.current };
@@ -60,7 +60,8 @@ function SheetPage() {
     if (type !== 'file' || extension !== 'workbook' || !owner || !repo || !branch) {
       return (<Err404Page />);
     } else {
-      ghLocation.current = { owner, repo, path: path, ref: branch };
+      const openAs = searchParams.get('openAs') || user.login;
+      ghLocation.current = { owner, repo, path: path, ref: branch, openAs };
       return (
         <Container fluid className={classNames("w-100 m-0 p-0 bg-body", styles.sheetContainer)}>
 

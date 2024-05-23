@@ -46,8 +46,6 @@ function BranchSelect(props: BranchSelectProps) {
     return <Alert variant="danger">{message}</Alert>
   }
   const renderList = (data: ReposListBranchesApiResponse) => {
-    console.log('render branch list');
-    console.log(data)
     if (data.length === 0) {
       return (
         <div className="text-center text-muted">
