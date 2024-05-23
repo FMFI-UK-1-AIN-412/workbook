@@ -91,14 +91,12 @@ function UnsavedChanges({ owner, repo, path, branch, branches, makeLink }: Unsav
     return <></>
   }
 
-  return (
+  return editingUsers.length > 0 ? (
     <Dropdown className="d-inline">
-
       <Dropdown.Toggle as={BadgeToggle} pill bg="secondary" title={editingUsers.length ? `Edited by ${editingUsers.join(', ')}` : undefined}>
         unmerged
         {editingUsers.map(username => <UserAvatar key={username} className="ms-2" style={{ maxHeight: '1rem' }} username={username} />)}
       </Dropdown.Toggle>
-
       <Dropdown.Menu>
         <Dropdown.Header>Open as</Dropdown.Header>
         {editingUsers.map(username => <Dropdown.Item key={username} as='div'>
@@ -108,7 +106,7 @@ function UnsavedChanges({ owner, repo, path, branch, branches, makeLink }: Unsav
         </Dropdown.Item>)}
       </Dropdown.Menu>
     </Dropdown>
-  )
+  ) : <Badge pill bg="secondary">unmerged</Badge>
 }
 
 function RepoExplorer(props: RepoExplorerProps) {
