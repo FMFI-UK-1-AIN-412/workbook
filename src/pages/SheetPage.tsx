@@ -68,6 +68,7 @@ function SheetPage() {
           <SheetSettingsModal tab={settingsTab} onClose={() => setSettingsTab('NONE')} />
           <SaveErrorModal />
           <RecomendedBranchModal addr={ghLocation.current} />
+          <StorageNavigationBlocker />
 
           <div className={classNames("p-3 border-bottom d-flex align-items-center flex-wrap position-sticky bg-body", styles.sheetToolbar)}>
             <div style={{}}>
