@@ -263,7 +263,7 @@ class SessionFull extends GhEngineState {
         addr: this.addr,
         message: payload.message,
         content: Base64.encode(payload.serialized),
-        branch: this.sessionBranch.name,
+        sessionBranchName: this.sessionBranch.name,
         commitId: this.sessionBranch.headId,
         fileHash: this.fileHash
       })

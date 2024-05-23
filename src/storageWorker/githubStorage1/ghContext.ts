@@ -237,14 +237,24 @@ export class GhContext {
       })
   }
 
-  async isBranchMerged2(args: { addr: GhOpenPayload, commitId: string }) {
+  async isBranchMerged2(args: { addr: GhOpenPayload, sessionBranchName: string, commitId: string }) {
     // faster graphql version of getting sheet branches info,
     // eliminates transfer of possibly big list with pull requests
-    const { addr, commitId } = args;
+    const { addr, sessionBranchName, commitId } = args;
     const { owner, repo } = addr;
 
     type ReponseType = {
-      repository: { object: { associatedPullRequests: { nodes: Array<{ state: string, headRefOid: string }> } } }
+      repository: { 
+        object: { 
+          associatedPullRequests: { 
+            nodes: Array<{ 
+              state: string, 
+              headRefOid: string,
+              headRefName: string,
+            }> 
+          } 
+        } 
+      }
     }
 
     return MayFail.do()
@@ -257,7 +267,8 @@ export class GhContext {
                 associatedPullRequests(first: 1) {
                   nodes {
                     state,
-                    headRefOid
+                    headRefOid,
+                    headRefName
                   }
                 }
               }
@@ -272,7 +283,8 @@ export class GhContext {
       .retF(scope => {
         console.log(scope)
         const nodes = (scope.pull as ReponseType).repository.object.associatedPullRequests.nodes
-        if (nodes.find(p => p.state === 'MERGED' && p.headRefOid === commitId) !== undefined) {
+        console.log('Nodes', nodes)
+        if (nodes.find(p => p.state === 'MERGED' && p.headRefOid === commitId && p.headRefName === sessionBranchName) !== undefined) {
           return MayFail.Success(true)
         }
         return MayFail.Success(false)
@@ -310,12 +322,12 @@ export class GhContext {
       })
   }
 
-  async commit(args: { addr: GhOpenPayload, message: string, content: string, branch: string, commitId: string, fileHash: string }) {
-    const { addr, branch, commitId, content, fileHash, message } = args;
+  async commit(args: { addr: GhOpenPayload, message: string, content: string, sessionBranchName: string, commitId: string, fileHash: string }) {
+    const { addr, sessionBranchName, commitId, content, fileHash, message } = args;
     const { owner, repo, path } = addr;
     console.log('in commit')
     return MayFail.do<Gh1AutosaveErr | Gh1ApiErrorEx>()
-      .assignV('mergedSession', await this.isBranchMerged2({ addr, commitId }))
+      .assignV('mergedSession', await this.isBranchMerged2({ addr, sessionBranchName, commitId }))
       .retF(scope => {
         if (scope.mergedSession === true) {
           return MayFail.Error({
@@ -331,7 +343,7 @@ export class GhContext {
           path: pathURIEncode(path),
           message, content,
           sha: fileHash,
-          branch,
+          branch: sessionBranchName,
         })
       )).retF(scope => {
         return MayFail.Success({
