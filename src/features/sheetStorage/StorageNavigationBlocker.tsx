@@ -2,8 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useBlocker } from "react-router-dom";
 import { useAppSelector, useAppDispatch } from "../../app/hooks";
 import { storageActions, storageSelectors } from "./storageSlice";
-import { Button, Modal } from "react-bootstrap";
-import Loading from "../../components/Loading";
+import { Button, Modal, ProgressBar } from "react-bootstrap";
 import DownloadWorkbook from "../sheet/utils/DownloadWorbook";
 
 export function StorageNavigationBlocker() {
@@ -15,10 +14,8 @@ export function StorageNavigationBlocker() {
     if (storageSynced === false &&
       currentLocation.pathname !== nextLocation.pathname) {
       dispatch(storageActions.syncUnsyncedChanges())
-      console.log('BLOCKING')
       return true;
     }
-    console.log('NOT BLOCKING')
     return false;
   }, [storageSynced, dispatch])
 
@@ -45,13 +42,13 @@ export function StorageNavigationBlocker() {
         onHide={() => blocker.reset()}
       >
         <Modal.Header closeButton>
-          <Modal.Title>There are changes waiting to be saved</Modal.Title>
+          <Modal.Title>Pending Changes</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           {queueState === 'processing'
             ? (<>
-              <p>Saving changes</p>
-              <div style={{ textAlign: 'center' }}><Loading /></div>
+              <p>Please wait while all changes are saved</p>
+              <ProgressBar animated now={100} />
             </>)
             : queueState === 'offline_paused'
               ? (
