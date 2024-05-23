@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, createBrowserRouter, RouterProvider } from 'react-router-dom';
 import "bootstrap/dist/css/bootstrap.min.css";
 import Navigation from './pages/Navigation';
@@ -15,6 +15,12 @@ import LoginPage from './pages/LoginPage';
 import config from './config.json';
 import ExercisesPage from './pages/ExercisesPage';
 
+const router = createBrowserRouter([
+  { path: "*", element: <Root /> },
+], {
+  basename: config.frontend.basePath
+});
+
 function App() {
   const user = useAppSelector(authSelectors.user);
   const accessToken = useAppSelector(authSelectors.accessToken);
@@ -29,30 +35,24 @@ function App() {
     }
   }, [user, tokenState, accessToken])
 
-  const Root = useCallback(() => (
-    <>
-      <Navigation />
-      <Routes>
-        <Route path='*' element={<Err404Page />} />
-        <Route path="/" element={<Navigate to="/workbooks" />} />
-        <Route path="/login/*" element={<LoginPage />} />
-        <Route path="/repos" element={<RepoListPage />} />
-        <Route path="/repos/:page" element={<RepoListPage />} />
-        <Route path="/repo/:owner/:repo/*" element={<RepoPage />} />
-        <Route path="/workbooks" element={<ExercisesPage />} />
-        <Route path="/sheet/:owner/:repo/*" element={<SheetPage />} />
-        <Route path="/logout" element={<LogoutPage />} />
-      </Routes>
-    </>
-  ), []);
-
-  const router = createBrowserRouter([
-    { path: "*", element: <Root /> },
-  ], {
-    basename: config.frontend.basePath
-  });
-
   return <RouterProvider router={router} />;
+}
+
+function Root() {
+  return (<>
+    <Navigation />
+    <Routes>
+      <Route path='*' element={<Err404Page />} />
+      <Route path="/" element={<Navigate to="/workbooks" />} />
+      <Route path="/login/*" element={<LoginPage />} />
+      <Route path="/repos" element={<RepoListPage />} />
+      <Route path="/repos/:page" element={<RepoListPage />} />
+      <Route path="/repo/:owner/:repo/*" element={<RepoPage />} />
+      <Route path="/workbooks" element={<ExercisesPage />} />
+      <Route path="/sheet/:owner/:repo/*" element={<SheetPage />} />
+      <Route path="/logout" element={<LogoutPage />} />
+    </Routes>
+  </>)
 }
 
 export default App;
