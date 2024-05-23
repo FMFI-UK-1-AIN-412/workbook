@@ -4,7 +4,6 @@ import { BiDownload, BiRefresh, BiTrash } from "react-icons/bi";
 import { useAppDispatch, useAppSelector } from "../../../app/hooks";
 import { runCommand, storageActions, storageSelectors } from "../storageSlice";
 import Loading from "../../../components/Loading";
-import { githubApiErrorMessage } from "../../../api/githubApi/errorMessage";
 import ErrBox from "../../../components/ErrBox";
 import { Gh1AutosaveErr, Gh1CustomState } from "../../../storageWorker/githubStorage1/types";
 import { downloadSheet } from "../../sheet/slice/sheetSlice";
@@ -26,10 +25,8 @@ export default function SaveErrorModal() {
   useEffect(() => {
     if (displayError) {
       setClosed(false);
-      document.body.scrollTop = 0; // For Safari
-      document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
     }
-  }, [displayError])
+  }, [displayError, saveError])
 
   if (engineInfo?.type !== 'github1' || !displayError) {
     return <></>
