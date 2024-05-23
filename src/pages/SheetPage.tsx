@@ -20,9 +20,10 @@ import classNames from 'classnames/dedupe';
 import styles from './SheetPage.module.scss';
 import { loadSheet, storageSelectors } from "../features/sheetStorage/storageSlice";
 import { GithubFileLocation } from "../storageWorker/githubStorage/types";
-import { downloadSheet } from "../features/sheet/slice/sheetSlice";
+import { downloadSheet, importFromFile } from "../features/sheet/slice/sheetSlice";
 import RecomendedBranchModal from "../features/sheetStorage/github/RecomendedBranchModal";
 import HandInButton from "../features/sheetStorage/github/HandInButton";
+import { StorageNavigationBlocker } from "../features/sheetStorage/StorageNavigationBlocker";
 
 function SheetPage() {
   const authState = useAppSelector(authSelectors.authState);
@@ -32,7 +33,7 @@ function SheetPage() {
   const params = useParams();
   const { owner, repo } = params;
   const url = params['*']
-  const repoParams = useMemo(() => parseGithubUrlPath(url || ''), [ url ]);
+  const repoParams = useMemo(() => parseGithubUrlPath(url || ''), [url]);
 
   const ghLocation = useRef<GithubFileLocation | undefined>(undefined);
   const dispatch = useAppDispatch();
@@ -92,6 +93,7 @@ function SheetPage() {
                       .filter(([tabName]) => tabName !== 'NONE')
                       .map(([tabName, tabInfo]) => <Dropdown.Item key={tabName} onClick={() => setSettingsTab(tabName as SettingTab)}>{tabInfo.title}</Dropdown.Item>)
                     }
+                    <Dropdown.Item onClick={() => dispatch(importFromFile())}>Import sheet</Dropdown.Item>
                     <Dropdown.Item onClick={() => dispatch(downloadSheet())}>Download sheet</Dropdown.Item>
                   </Dropdown.Menu>
                 </Dropdown>

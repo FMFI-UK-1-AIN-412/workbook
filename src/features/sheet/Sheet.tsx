@@ -4,6 +4,7 @@ import { CellLocator, sheetSelectors } from "./slice/sheetSlice";
 import { useMemo, useState } from "react";
 import katex from "katex";
 import ContextContainer from "./ContextContainer";
+import ImportWarningModal from "./modals/ImportWarningModal";
 
 export interface SheetProps {
   
@@ -12,7 +13,6 @@ export interface SheetProps {
 export default function Sheet(props: SheetProps) {
   const loadState = useAppSelector(sheetSelectors.state);
   const sheetError = useAppSelector(sheetSelectors.error);
-  const cellsOrder = useAppSelector(sheetSelectors.cellsOrder);
   const settings = useAppSelector(sheetSelectors.sheetSettings);
 
   const [fullscreenCell, setFullscreenCell] = useState<CellLocator | undefined>(undefined);
@@ -39,6 +39,7 @@ export default function Sheet(props: SheetProps) {
   } else {
     return (
       <article className="m-3 h-100">
+        <ImportWarningModal />
         <ContextContainer
           cellLoc={{id: -1, index: -1, contextId: -1}}
           katexMacros={katexMacros}
