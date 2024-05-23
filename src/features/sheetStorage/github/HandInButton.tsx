@@ -39,7 +39,7 @@ function HandInButton({ addr, isOnline, storageEngine, customState }: HandInButt
     repo: repoInfo.data?.parent?.name || '',
     state: 'all'
   }, {
-    skip: !repoInfo.isSuccess
+    skip: !repoInfo.isSuccess || repoInfo.data?.parent === undefined
   })
   const dispatch = useAppDispatch()
 
