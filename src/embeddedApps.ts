@@ -2,6 +2,7 @@ import ResolutionEditor from '@fmfi-uk-1-ain-412/resolution-editor'
 import StructureExplorer from '@fmfi-uk-1-ain-412/fol-graphexplorer'
 import TableauEditor from '@fmfi-uk-1-ain-412/tableaueditor'
 import FormalizationCheckerConf from '@fmfi-uk-1-ain-412/formalization-checker'
+import config from './config.json';
 import { CellContext } from './features/sheet/slice/logicContext'
 
 export interface PrepareResult {
@@ -54,7 +55,7 @@ export const embeddedApps: EmeddedApp[] =
       name: 'Formalization checker',
       supportsProofs: false,
       typeName: 'formalizationChecker',
-      ...FormalizationCheckerConf('https://student.dai.fmph.uniba.sk/services/formalization-checker')
+      ...FormalizationCheckerConf(config.embeddedApps.formalizationChecker.backendUrl)
     }
   ]
 

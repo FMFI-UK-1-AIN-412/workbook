@@ -9,5 +9,10 @@
     "basePath": "/workbook",
     "baseUrl": "https://fmfi-uk-1-ain-412.github.io/workbook",
     "cellUpdateIntervalSec": 30
+  },
+  "embeddedApps": {
+    "formalizationChecker": {
+      "backendUrl": "https://student.dai.fmph.uniba.sk/services/formalization-checker"
+    }
   }
 }
