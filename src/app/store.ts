@@ -5,6 +5,7 @@ import authReducer from '../features/auth/authSlice';
 import { setupListeners } from '@reduxjs/toolkit/dist/query';
 import { storageMiddleware } from './storageMiddleware';
 import { storageSlice, storageSelectors } from '../features/sheetStorage/storageSlice';
+import { githubGqlApi } from '../api/githubApi/graphqlApi/baseApi';
 
 export const store = configureStore({
   reducer: {
@@ -12,6 +13,7 @@ export const store = configureStore({
     sheet: sheetReducer,
     storage: storageSlice.reducer,
     [githubApi.reducerPath]: githubApi.reducer,
+    [githubGqlApi.reducerPath]: githubGqlApi.reducer,
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(githubApi.middleware, storageMiddleware),
 });

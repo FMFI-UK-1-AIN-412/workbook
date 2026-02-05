@@ -1,8 +1,8 @@
-import { Alert, Badge, Card, ListGroup, Placeholder, Spinner, Row, Col } from "react-bootstrap";
+import { Alert, Badge, Card, ListGroup, Placeholder, Spinner, Row, Col, Dropdown, BadgeProps } from "react-bootstrap";
 import { FileEarmark, FileEarmarkPlusFill, FolderFill, SlashCircle } from 'react-bootstrap-icons';
 import { Link } from "react-router-dom";
 import Pathbar from "./Pathbar";
-import { ContentDirectory, ReposGetContentApiResponse, useReposGetContentQuery, useReposGetQuery, useReposListBranchesQuery } from "../../api/githubApi/endpoints/repos";
+import { ContentDirectory, ReposGetContentApiResponse, ReposListBranchesApiResponse, useReposGetContentQuery, useReposGetQuery, useReposListBranchesQuery } from "../../api/githubApi/endpoints/repos";
 import BranchSelect from "./BranchSelect";
 import { displayLoadable } from "./displayLoadable";
 
@@ -14,13 +14,16 @@ import { useRef } from "react";
 import { emptySheet } from "../sheet/slice/sheetSlice";
 import { getSessionBranchName, pathURIEncode } from "../../storageWorker/githubStorage/utils";
 import DisplayReadme from "./DisplayReadme";
+import UserAvatar from "../auth/UserAvatar";
+import React from "react";
+import { BsPrefixRefForwardingComponent } from "react-bootstrap/esm/helpers";
 
 export interface RepoExplorerProps {
   owner: string,
   repo: string,
   branch?: string,
   path: string,
-  makeLink: (path: string, fileType: 'file' | 'dir', owner: string, repo: string, branch?: string) => string
+  makeLink: (path: string, fileType: 'file' | 'dir', owner: string, repo: string, branch?: string, openAs?: string) => string
   transformFileItem?: (path: string, fileType: 'file' | 'dir') => { changeIcon?: JSX.Element }
 }
 
@@ -51,6 +54,61 @@ function isEmptyRepoError(error: any) {
   return false;
 }
 
+const BadgeToggle = React.forwardRef<HTMLSpanElement, BadgeProps>(({ children, onClick, ...props }, ref) => (
+  <Badge
+    ref={ref}
+    onClick={(e) => {
+      e.preventDefault();
+      if (onClick !== undefined) {
+        onClick(e);
+      }
+    }}
+    style={{ cursor: 'pointer' }}
+    {...props}
+  >
+    {children}
+  </Badge>
+));
+
+type UnsavedChangesProps = Pick<RepoExplorerProps, 'owner' | 'repo' | 'path' | 'branch' | 'makeLink'> & {
+  branches: ReposListBranchesApiResponse | undefined
+}
+function UnsavedChanges({ owner, repo, path, branch, branches, makeLink }: UnsavedChangesProps) {
+  if (branches === undefined) {
+    return <></>
+  }
+
+  const expectedSessionBranchName = getSessionBranchName({ owner, repo, path, ref: branch || '' });
+  const editedBranches = branches
+    ?.filter(b => b.name.startsWith(expectedSessionBranchName))
+    .map(b => b.name) || [];
+  const isEdited = editedBranches.length > 0
+  const editingUsers = editedBranches
+    ?.filter(n => n.startsWith(expectedSessionBranchName) && n.length > expectedSessionBranchName.length + 1)
+    .map(n => n.slice(expectedSessionBranchName.length + 1)) || []
+
+  if (isEdited === false) {
+    return <></>
+  }
+
+  return editingUsers.length > 0 ? (
+    <Dropdown className="d-inline">
+      <Dropdown.Toggle as={BadgeToggle} pill bg="secondary" title={editingUsers.length ? `Edited by ${editingUsers.join(', ')}` : undefined}>
+        unmerged
+        {editingUsers.map(username => <UserAvatar key={username} className="ms-2" style={{ maxHeight: '1rem' }} username={username} />)}
+      </Dropdown.Toggle>
+      <Dropdown.Menu>
+        <Dropdown.Header>Open as</Dropdown.Header>
+        {editingUsers.map(username => <Dropdown.Item key={username} as='div'>
+          <Link className={styles.linkStyle} to={makeLink(path, 'file', owner, repo, branch, username)}>
+            <UserAvatar key={username} className="ms-2" style={{ maxHeight: '1rem' }} username={username} /> {username}
+          </Link>
+        </Dropdown.Item>)}
+      </Dropdown.Menu>
+    </Dropdown>
+  ) : <Badge pill bg="secondary">unmerged</Badge>
+}
+
 function RepoExplorer(props: RepoExplorerProps) {
   const { owner, repo, path, makeLink, transformFileItem } = props;
   let { branch } = props;
@@ -58,7 +116,7 @@ function RepoExplorer(props: RepoExplorerProps) {
   const repoInfo = useReposGetQuery({ owner, repo }, { skip: branch !== undefined });
   const branches = useReposListBranchesQuery({ owner, repo, perPage: 100 }, { skip: branch === undefined && !repoInfo.isSuccess });
   const content = useReposGetContentQuery({ owner, repo, ref: branch, path: pathURIEncode(path) }, { skip: branch === undefined && !repoInfo.isSuccess && !branches.isSuccess });
-  
+
   const existingFilenames = useRef<Set<string>>(new Set());
 
   if (repoInfo.isSuccess && !branch) {
@@ -97,12 +155,6 @@ function RepoExplorer(props: RepoExplorerProps) {
     const link = makeLink(filePath, file.type, owner, repo, branch);
     let icon = file.type === 'file' ? fileIcon : folderIcon
 
-    const unsavedChanges = () => {
-      const branchList = branches.data;
-      const expectedSessionBranchName = getSessionBranchName({ owner, repo, path: filePath, ref: branch || ''});
-      return branchList?.find(b => b.name === expectedSessionBranchName) !== undefined;
-    }
-
     if (transformFileItem) {
       let { changeIcon } = transformFileItem(filePath, file.type);
       if (changeIcon) {
@@ -123,7 +175,7 @@ function RepoExplorer(props: RepoExplorerProps) {
       <ListGroup.Item className={styles.fileItem} key={file.name}>
         <span className={styles.itemIcon}>{icon}</span>
         {link ? <Link className={styles.linkStyle} style={{ marginRight: '1em' }} to={link}>{file.name}</Link> : file.name}
-        {unsavedChanges() && <Badge pill bg="secondary">unmerged</Badge>}
+        <UnsavedChanges {...{ owner, repo, branch, branches: branches.data, path: filePath, makeLink }} />
       </ListGroup.Item>
     )
   }

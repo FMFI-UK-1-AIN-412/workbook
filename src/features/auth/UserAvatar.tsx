@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Image } from "react-bootstrap";
 import { authSelectors } from "./authSlice"
 import { useAppSelector } from "../../app/hooks"
+import { RiAliensFill } from "react-icons/ri";
 
 export interface UserAvatarProps {
   className?: string,
@@ -12,5 +13,9 @@ export interface UserAvatarProps {
 export default function UserAvatar(props: UserAvatarProps) {
   const user = useAppSelector(authSelectors.user)
   const avatarUrl = props.username ? `https://github.com/${props.username}.png` : user?.avatarUrl;
-  return <Image roundedCircle src={avatarUrl} className={props.className} style={props.style} />
+  const [err, setErr] = useState(false);
+
+  return err
+    ? <RiAliensFill className={props.className} style={props.style} />
+    : <Image onError={() => setErr(true)} roundedCircle src={avatarUrl} className={props.className} style={props.style} />
 }

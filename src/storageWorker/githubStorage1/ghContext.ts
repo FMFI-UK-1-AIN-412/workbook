@@ -1,7 +1,7 @@
 import { Octokit, RequestError } from "octokit"
 import { MayFail, TMayFail, err, success } from "./mayfail"
-import { Gh1ApiError, Gh1ApiErrorEx, Gh1AutosaveErr, Gh1CustomState, Gh1MergeErr, Gh1OpenErr } from "./types"
-import { GhEngineState, GhOpenPayload } from "./ghEngine"
+import { Gh1ApiError, Gh1ApiErrorEx, Gh1AutosaveErr, Gh1CustomState, Gh1MergeErr, Gh1OpenErr, Gh1HandInErr } from "./types"
+import { GhEngineState, GhOpenPayload, HandInPayload } from "./ghEngine"
 import { getSessionBranchName, pathURIEncode } from "../githubStorage/utils"
 import { Base64 } from "js-base64"
 
@@ -55,8 +55,35 @@ export class GhContext {
     }
   }
 
+  async handIn(args: HandInPayload & {  addr: GhOpenPayload }) {
+    const { owner, repo, ref } = args.addr;
+    const { handInBranch, title, body } = args;
+    const operation = MayFail.do<Gh1HandInErr | Gh1ApiErrorEx>()
+      .assignV('repoInfo', await octoProm(
+        this.octokit.rest.repos.get({ owner, repo })
+      ))
+      .asyncAssignF('pullRequest', async scope => {
+        const { parent } = scope.repoInfo.data
+        if (parent === undefined) {
+          return MayFail.Error({
+            reason: 'no_parent',
+            message: 'Workbook opened from repository that has no parent'
+          })
+        }
+        return octoProm(
+          this.octokit.rest.pulls.create({
+            owner: parent.owner.login, repo,
+            base: handInBranch,
+            head: `${owner}:${ref}`,
+            title, body
+          })
+        )
+      })
+      return operation
+  }
+
   async open(addr: GhOpenPayload) {
-    const { owner, repo, path, ref } = addr;
+    const { owner, repo, path } = addr;
     return MayFail.do<Gh1OpenErr | Gh1ApiErrorEx>()
       .assignV('branches', await octoProm(
         this.octokit.paginate(this.octokit.rest.repos.listBranches, {
@@ -210,14 +237,24 @@ export class GhContext {
       })
   }
 
-  async isBranchMerged2(args: { addr: GhOpenPayload, commitId: string }) {
+  async isBranchMerged2(args: { addr: GhOpenPayload, sessionBranchName: string, commitId: string }) {
     // faster graphql version of getting sheet branches info,
     // eliminates transfer of possibly big list with pull requests
-    const { addr, commitId } = args;
+    const { addr, sessionBranchName, commitId } = args;
     const { owner, repo } = addr;
 
     type ReponseType = {
-      repository: { object: { associatedPullRequests: { nodes: Array<{ state: string, headRefOid: string }> } } }
+      repository: { 
+        object: { 
+          associatedPullRequests: { 
+            nodes: Array<{ 
+              state: string, 
+              headRefOid: string,
+              headRefName: string,
+            }> 
+          } 
+        } 
+      }
     }
 
     return MayFail.do()
@@ -230,7 +267,8 @@ export class GhContext {
                 associatedPullRequests(first: 1) {
                   nodes {
                     state,
-                    headRefOid
+                    headRefOid,
+                    headRefName
                   }
                 }
               }
@@ -245,7 +283,8 @@ export class GhContext {
       .retF(scope => {
         console.log(scope)
         const nodes = (scope.pull as ReponseType).repository.object.associatedPullRequests.nodes
-        if (nodes.find(p => p.state === 'MERGED' && p.headRefOid === commitId) !== undefined) {
+        console.log('Nodes', nodes)
+        if (nodes.find(p => p.state === 'MERGED' && p.headRefOid === commitId && p.headRefName === sessionBranchName) !== undefined) {
           return MayFail.Success(true)
         }
         return MayFail.Success(false)
@@ -283,12 +322,12 @@ export class GhContext {
       })
   }
 
-  async commit(args: { addr: GhOpenPayload, message: string, content: string, branch: string, commitId: string, fileHash: string }) {
-    const { addr, branch, commitId, content, fileHash, message } = args;
+  async commit(args: { addr: GhOpenPayload, message: string, content: string, sessionBranchName: string, commitId: string, fileHash: string }) {
+    const { addr, sessionBranchName, commitId, content, fileHash, message } = args;
     const { owner, repo, path } = addr;
     console.log('in commit')
     return MayFail.do<Gh1AutosaveErr | Gh1ApiErrorEx>()
-      .assignV('mergedSession', await this.isBranchMerged2({addr, commitId}))
+      .assignV('mergedSession', await this.isBranchMerged2({ addr, sessionBranchName, commitId }))
       .retF(scope => {
         if (scope.mergedSession === true) {
           return MayFail.Error({
@@ -304,7 +343,7 @@ export class GhContext {
           path: pathURIEncode(path),
           message, content,
           sha: fileHash,
-          branch,
+          branch: sessionBranchName,
         })
       )).retF(scope => {
         return MayFail.Success({
@@ -340,8 +379,8 @@ export class GhContext {
       .retV(MayFail.Success(true))
   }
 
-  async mergeSession(args: {addr: GhOpenPayload, sourceBranch: { name: string }, targetBranch: string}) {
-    const {addr, sourceBranch, targetBranch} = args;
+  async mergeSession(args: { addr: GhOpenPayload, sourceBranch: { name: string }, targetBranch: string }) {
+    const { addr, sourceBranch, targetBranch } = args;
     const { owner, repo, path } = addr;
     // parse filename from repo path
     const filename = path.replace(/^([^/]*\/)*([^/]+)\.workbook$/, '$2');
@@ -366,7 +405,7 @@ export class GhContext {
             reason: 'multiple_pulls',
             message: 'The repository is in an inconsistent state. There are multiple pull requests open from the session branch to the base branch.',
           })
-        } else if (pr.length == 1) {
+        } else if (pr.length === 1) {
           // opened pull request from source to target branch already created
           // lets use it
           return success({ pullNumber: pr[0].number, pullUrl: pr[0].html_url, created: true })
@@ -416,7 +455,7 @@ export class GhContext {
         return a
       }) // delete session branch
       .asyncAssignF('deleteResult', async scope => {
-        const result = await octoProm(
+        await octoProm(
           this.octokit.rest.git.deleteRef({
             owner, repo,
             ref: `heads/${pathURIEncode(sourceBranch.name)}`

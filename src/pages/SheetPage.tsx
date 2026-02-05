@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ButtonGroup, ButtonToolbar, Container, Dropdown } from "react-bootstrap";
-import { useLocation, useParams } from "react-router-dom";
+import { useLocation, useParams, useSearchParams } from "react-router-dom";
 import { FileEarmarkRuledFill, GearFill } from "react-bootstrap-icons";
 import { authSelectors } from "../features/auth/authSlice";
 import { useAppDispatch, useAppSelector } from "../app/hooks";
@@ -19,8 +19,11 @@ import UndoRedoButtonGroup from "../features/sheet/UndoRedo";
 import classNames from 'classnames/dedupe';
 import styles from './SheetPage.module.scss';
 import { loadSheet, storageSelectors } from "../features/sheetStorage/storageSlice";
-import { GithubFileLocation } from "../storageWorker/githubStorage/types";
-import { downloadSheet } from "../features/sheet/slice/sheetSlice";
+import { downloadSheet, importFromFile } from "../features/sheet/slice/sheetSlice";
+import RecomendedBranchModal from "../features/sheetStorage/github/RecomendedBranchModal";
+import HandInButton from "../features/sheetStorage/github/HandInButton";
+import { StorageNavigationBlocker } from "../features/sheetStorage/StorageNavigationBlocker";
+import { GhOpenPayload } from "../storageWorker/githubStorage1/ghEngine";
 
 function SheetPage() {
   const authState = useAppSelector(authSelectors.authState);
@@ -29,18 +32,20 @@ function SheetPage() {
   const location = useLocation();
   const params = useParams();
   const { owner, repo } = params;
-  const repoParams = parseGithubUrlPath(params['*'] || '');
-
-  const ghLocation = useRef<GithubFileLocation | undefined>(undefined);
+  const url = params['*']
+  const repoParams = useMemo(() => parseGithubUrlPath(url || ''), [url]);
+  let [searchParams] = useSearchParams();
+  const ghLocation = useRef<GhOpenPayload | undefined>(undefined);
   const dispatch = useAppDispatch();
 
   useEffect(() => {
-    let lastLoaded: GithubFileLocation | undefined = undefined
+    let lastLoaded: GhOpenPayload | undefined = undefined
     if (ghLocation.current !== undefined && JSON.stringify(ghLocation.current) !== JSON.stringify(lastLoaded)) {
+      console.log('loading shhet')
       lastLoaded = { ...ghLocation.current };
       dispatch(loadSheet('github1', ghLocation.current))
     }
-  }, [ghLocation, dispatch]);
+  }, [repoParams, dispatch]);
 
   const [settingsTab, setSettingsTab] = useState<SettingTab>('NONE')
   const [mergeSheetModal, setMergeSheetModal] = useState(false);
@@ -55,13 +60,16 @@ function SheetPage() {
     if (type !== 'file' || extension !== 'workbook' || !owner || !repo || !branch) {
       return (<Err404Page />);
     } else {
-      ghLocation.current = { owner, repo, path: path, ref: branch };
+      const openAs = searchParams.get('openAs') || user.login;
+      ghLocation.current = { owner, repo, path: path, ref: branch, openAs };
       return (
         <Container fluid className={classNames("w-100 m-0 p-0 bg-body", styles.sheetContainer)}>
 
           <MergeSheetModal show={mergeSheetModal} onClose={() => setMergeSheetModal(false)} />
           <SheetSettingsModal tab={settingsTab} onClose={() => setSettingsTab('NONE')} />
           <SaveErrorModal />
+          <RecomendedBranchModal addr={ghLocation.current} />
+          <StorageNavigationBlocker />
 
           <div className={classNames("p-3 border-bottom d-flex align-items-center flex-wrap position-sticky bg-body", styles.sheetToolbar)}>
             <div style={{}}>
@@ -75,6 +83,7 @@ function SheetPage() {
               <UndoRedoButtonGroup />
               <ButtonGroup className="me-2">
                 <MergeButton />
+                <HandInButton addr={ghLocation.current} />
               </ButtonGroup>
               <ButtonGroup>
                 <Dropdown>
@@ -86,6 +95,7 @@ function SheetPage() {
                       .filter(([tabName]) => tabName !== 'NONE')
                       .map(([tabName, tabInfo]) => <Dropdown.Item key={tabName} onClick={() => setSettingsTab(tabName as SettingTab)}>{tabInfo.title}</Dropdown.Item>)
                     }
+                    <Dropdown.Item onClick={() => dispatch(importFromFile())}>Import sheet</Dropdown.Item>
                     <Dropdown.Item onClick={() => dispatch(downloadSheet())}>Download sheet</Dropdown.Item>
                   </Dropdown.Menu>
                 </Dropdown>

@@ -1,6 +1,6 @@
 import { StorageEngine } from "../storageEngine";
-import { AutosavePayload, Command, CommandResult, Task, TaskResult } from "../workerApi";
-import { GithubEngine } from "./ghEngine";
+import { AutosavePayload, Command, Task } from "../workerApi";
+import { GithubEngine, HandInPayload } from "./ghEngine";
 import { TMayFail } from "./mayfail";
 import { Gh1CustomState } from "./types";
 
@@ -64,6 +64,9 @@ export function initGithubEngine(initPayload: any): StorageEngine {
         }
         case 'merge': {
           return adapter(await gh.mergeTask())
+        }
+        case 'handIn': {
+          return adapter(await gh.handInTask(task.payload as HandInPayload))
         }
         default:
           throw new Error("Unknown task in github engine: " + task.type)

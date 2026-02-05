@@ -16,6 +16,7 @@ function Navigation() {
       <Navbar.Toggle aria-controls="responsive-navbar-nav" />
       <Navbar.Collapse>
         <Nav>
+          <Nav.Link as={NavLink} to="/workbooks">Workbooks</Nav.Link>
           <Nav.Link as={NavLink} to="/repos">Repositories</Nav.Link>
         </Nav>
       </Navbar.Collapse>

@@ -1,10 +1,9 @@
-import { AnyAction, createEntityAdapter, createSelector, createSlice, EntityState, PayloadAction } from "@reduxjs/toolkit";
+import { AnyAction, createEntityAdapter, createSlice, EntityState, PayloadAction } from "@reduxjs/toolkit";
 import undoable, { includeAction } from "redux-undo";
 import { AppDispatch, RootState } from '../../../app/store'
-import { ContextExtension, LogicContext, cellContext, clearContextMemo } from "./logicContext";
-import { deserializeWorkbook, serializeWorkbook, testSheetIntegrity } from "./workbookFormat";
+import { ContextExtension, cellContext, clearContextMemo } from "./logicContext";
+import { deserializeWorkbook, serializeWorkbook } from "./workbookFormat";
 import { WritableDraft } from "immer/dist/internal";
-import { deserialize } from "v8";
 
 export interface CellComment {
   id: number,
@@ -13,7 +12,7 @@ export interface CellComment {
   text: string,
 }
 
-const commentsAdapter = createEntityAdapter({
+export const commentsAdapter = createEntityAdapter({
   sortComparer: (a: CellComment, b: CellComment) => a.timestamp - b.timestamp
 });
 
@@ -66,6 +65,7 @@ export interface SheetSlice {
   sheetFile: SheetFile,
   localState: LocalState,
   filename: string
+  import?: { json: string, error?: string }
 }
 
 const initialState: SheetSlice = {
@@ -103,22 +103,30 @@ export const sheetSlice = createSlice({
         sheetId
       }
 
-      const res = deserializeWorkbook(json);
-      if (res.result === 'success') {
-        const { sheetFile } = res;
-
-        const { localState } = state;
-        const sf = sheetFile as SheetFile;
-        state.sheetFile = sheetFile;
-
-        // initialize cellIdCounter with max cell id + 1
-        localState.cellIdCounter = Object.entries(sf.cells).map(e => e[1].id).reduce((prev, cur) => Math.max(prev, cur), 0) + 1
-
+      const res = importJson(state, json);
+      if (res === true) {
         state.state = 'loaded';
       } else {
         state.state = "load_error";
-        state.errorMessage = res.message
+        state.errorMessage = res;
       }
+    },
+    import: (state, action: PayloadAction<{ json: string }>) => {
+      const { json } = action.payload
+      const res = importJson(state, json);
+      if (res !== true) {
+        state.import = { json, error: `Importing failed: ${res}` }
+      } else {
+        state.import = undefined;
+        updateHistory(action, 'Imported workbook from file')
+      }
+    },
+    importWithWarning: (state, action: PayloadAction<{ json: string }>) => {
+      const { json } = action.payload;
+      state.import = { json };
+    },
+    clearImport: (state) => {
+      state.import = undefined
     },
     insertCell: (state, action: PayloadAction<{ after: CellLocator, type: string, data: any }>) => {
       const { after, type, data } = action.payload;
@@ -301,6 +309,23 @@ export const sheetSlice = createSlice({
   }
 });
 
+function importJson(state: WritableDraft<SheetSlice>, json: string) {
+  const res = deserializeWorkbook(json);
+  if (res.result === 'success') {
+    const { sheetFile } = res;
+
+    const { localState } = state;
+    const sf = sheetFile as SheetFile;
+    state.sheetFile = sheetFile;
+
+    // initialize cellIdCounter with max cell id + 1
+    localState.cellIdCounter = Object.entries(sf.cells).map(e => e[1].id).reduce((prev, cur) => Math.max(prev, cur), 0) + 1
+    return true;
+  } else {
+    return res.message;
+  }
+}
+
 export function getParentCellsOrder(state: WritableDraft<SheetSlice>, { contextId }: CellLocator): number[] {
   if (contextId === -1) {
     return state.sheetFile.cellsOrder;
@@ -313,6 +338,7 @@ export function getParentCellsOrder(state: WritableDraft<SheetSlice>, { contextI
   }
 }
 
+// Notifies storage middleware about update, which will create autosave task.
 function updateHistory(action: AnyAction, message: string) {
   if ('historyChanged' in action) {
     (action as unknown as { historyChanged: (msg: string) => void }).historyChanged(message);
@@ -360,6 +386,31 @@ const remmoveCellComment = function (payload: { cellLoc: CellLocator, commentId:
   }
 }
 
+export function importFromFile() {
+  return (dispatch: AppDispatch, getState: () => RootState) => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.workbook,application/json';
+    input.onchange = _ => {
+      if (input.files !== null) {
+        // some file was selected
+        const file = input.files[0]
+        const fileReader = new FileReader();
+        fileReader.onload = e => {
+          const json = e.target?.result;
+          if (typeof json === 'string') {
+            dispatch(sheetActions.import({ json }));
+          } else {
+            console.error('Import failed. File reader result:', e.target?.result)
+          }
+        }
+        fileReader.readAsText(file)
+      }
+    };
+    input.click();
+  }
+}
+
 export function downloadSheet() {
   return (dispatch: AppDispatch, getState: () => RootState) => {
     const state = getState();
@@ -376,7 +427,7 @@ export function downloadSheet() {
 function initSheet(filename: string, json: string, sheetId: string) {
   return (dispatch: AppDispatch, getState: () => RootState) => {
     clearContextMemo();
-    dispatch(sheetActions.initFromJson({filename, json, sheetId }));
+    dispatch(sheetActions.initFromJson({ filename, json, sheetId }));
   }
 }
 
@@ -393,6 +444,7 @@ export interface CellLocator {
 
 /* Selectors */
 export const sheetSelectors = {
+  filename: (state: RootState) => state.sheet.present.filename,
   state: (state: RootState) => state.sheet.present.state,
   sheetId: (state: RootState) => state.sheet.present.localState.sheetId,
   error: (state: RootState) => state.sheet.present.errorMessage,
@@ -407,6 +459,7 @@ export const sheetSelectors = {
   lastCreatedCellId: (state: RootState) => state.sheet.present.localState.lastCreatedCellId,
   logicContext: (cell: CellLocator) => cellContext(cell),
   contextCellsList: (cellLoc: CellLocator) => { return (state: RootState) => getParentCellsOrder(state.sheet.present, cellLoc) },
+  importInfo: (state: RootState) => state.sheet.present.import,
 }
 
 export default undoable(sheetSlice.reducer, {
@@ -421,5 +474,6 @@ export default undoable(sheetSlice.reducer, {
     'sheet/deleteCell',
     'sheet/deleteComment',
     'sheet/updateSettings',
+    'sheet/import'
   ])
 });

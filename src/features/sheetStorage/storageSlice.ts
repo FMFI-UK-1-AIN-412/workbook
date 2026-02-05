@@ -53,7 +53,6 @@ export const storageSlice = createSlice({
   initialState,
   reducers: {
     init: (state, action: PayloadAction<{ engineType: EngineType }>) => {
-      const online = state.online;
       // copy initialState
       state.instanceId = Date.now();
       state.taskError = undefined;
@@ -205,6 +204,30 @@ export const storageSelectors = {
   instanceId: (state: RootState) => state.storage.instanceId,
   taskError: (state: RootState) => state.storage.taskError,
   taskQueue: (state: RootState) => state.storage.taskQueue,
+  monitorTask: createSelector([
+    (state: RootState) => ({ items: state.storage.taskQueue.items, taskById: state.storage.taskById }),
+    (state: RootState, type: string) => type
+  ], ({ items, taskById }, type) => {
+    // @ts-ignore
+    const lastProcessed = items.findLast(taskId =>
+      taskById[taskId].task.type === type
+      && taskById[taskId].state !== 'waiting'
+      && taskById[taskId].state !== 'processing'
+    )
+    const firstUnprocessed = items.find(taskId =>
+      taskById[taskId].task.type === type
+      && (taskById[taskId].state === 'waiting'
+        || taskById[taskId].state === 'processing'
+      )
+    )
+    if (firstUnprocessed !== undefined) {
+      return {taskId: firstUnprocessed, task: taskById[firstUnprocessed]}
+    }
+    if (lastProcessed !== undefined) {
+      return {taskId: lastProcessed, task: taskById[lastProcessed]}
+    }
+    return undefined;
+  }),
   lastProcessedTask: createSelector([
     (state: RootState) => ({ items: state.storage.taskQueue.items, taskById: state.storage.taskById }),
     (state: RootState, type: string) => type
@@ -213,12 +236,17 @@ export const storageSelectors = {
     const taskId = items.findLast(
       (taskId: number) =>
         taskById[taskId].state !== 'waiting'
+        && taskById[taskId].state !== 'processing'
         && taskById[taskId].task.type === type
     )
     return taskId === undefined
       ? undefined
       : taskById[taskId]
   }),
+  task: (id: number) => (state: RootState) => {
+    const task = state.storage.taskById[id];
+    return task === undefined ? 'unknown_task' : task
+  },
   taskState: (id: number) => (state: RootState) => {
     const task = state.storage.taskById[id];
     return task === undefined ? 'unknown_task' : task.state
