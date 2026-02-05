@@ -22,8 +22,7 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-src/config-ghpage.json
-src/config-local.json
-src/config.json
-backend-config.env
-backend-config.env.template
+/src/config-ghpage*.json
+/src/config-local.json
+/src/config.json
+/backend-config.env
