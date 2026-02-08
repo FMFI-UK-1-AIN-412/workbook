@@ -40,6 +40,7 @@ export function deserializeWorkbook(workbook: string)
   if (passed) {
     return { result: 'success', sheetFile }
   } else {
+    console.error('Sheet integrity test failed:', error, sheetFile);
     return {
       result: 'error',
       message: error!
@@ -78,14 +79,16 @@ export function testSheetIntegrity(sheet: SheetFile): { passed: boolean, error?:
 
   for (const [key, value] of Object.entries(sheet)) {
     const keyType = key in reqKeys ? 'REQUIRED' : (key in optKeys ? 'OPTIONAL' : 'UNKNOWN')
-    if (keyType === 'REQUIRED' || keyType === 'OPTIONAL') {
-      const expectedType = keyType === 'REQUIRED' ? reqKeys[key] : optKeys[key]
-      if (typeof value !== expectedType) {
-        error = `Kľúč '${key}' je nesprávneho typu`;
-        break;
-      }
-    } else {
-      error = `Neznámi Kľúč '${key}'`;
+    if (keyType === 'UNKNOWN') {
+      error = `Neznámy kľúč '${key}'`;
+      break;
+    }
+    if (keyType === 'OPTIONAL' && value === undefined) {
+      continue;
+    }
+    const expectedType = keyType === 'REQUIRED' ? reqKeys[key] : optKeys[key]
+    if (typeof value !== expectedType) {
+      error = `Kľúč '${key}' je nesprávneho typu (${typeof value} namiesto očakávaného ${expectedType})`;
       break;
     }
   }
@@ -114,7 +117,6 @@ export function testSheetIntegrity(sheet: SheetFile): { passed: boolean, error?:
 
 interface SimplifiedFormat {
   versionNumber: 2,
-  settings?: SheetSettings,
   cells: Array<{
     id: number,
     type: string,
@@ -127,6 +129,7 @@ interface SimplifiedFormat {
     data: any,
     contextExtension?: ContextExtension,
   }>,
+  settings?: SheetSettings,
 }
 type ArrayItemType<T> = T extends Array<infer U> ? U : never
 type SimplifiedCell = ArrayItemType<SimplifiedFormat['cells']>
@@ -163,8 +166,8 @@ function simplifyContext(cellsOrder: number[], cells: SheetFile['cells']): Simpl
 export function serializeWorkbook2(workbook: SheetFile) {
   const content: SimplifiedFormat = {
     versionNumber: 2,
-    settings: workbook.settings,
-    cells: simplifyContext(workbook.cellsOrder, workbook.cells)
+    cells: simplifyContext(workbook.cellsOrder, workbook.cells),
+    settings: workbook.settings
   }
   return JSON.stringify(content, null, 2)
 }
@@ -193,12 +196,14 @@ function convertContext(simplifiedContext: SimplifiedCell[], cells: SheetFile['c
 export function deserializeWorkbook2(workbook: SimplifiedFormat): SheetFile {
   const cells: SheetFile['cells'] = {}
   const cellsOrder = convertContext(workbook.cells, cells)
+  const settings = workbook.settings;
 
   return {
     versionNumber: 2,
-    settings: workbook.settings,
-    cells, cellsOrder
-  }
+    cells,
+    cellsOrder,
+    settings
+  };
 }
 
 export function compareSheetFiles(s1: SheetFile, s2: SheetFile) {
