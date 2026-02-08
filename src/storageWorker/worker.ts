@@ -5,7 +5,7 @@ import { AutosaveTask, EngineMessage, Task } from "./workerApi";
 
 import { initGithubEngine } from "./githubStorage/engine";
 import { initGithubEngine as initGhEngine1 } from "./githubStorage1/adapter";
-import { serializeWorkbook } from "../features/sheet/slice/workbookFormat";
+import { serializeWorkbook2 } from "../features/sheet/slice/workbookFormat";
 
 let storageEngine: StorageEngine
 self.onmessage = async (e: MessageEvent<{msg: EngineMessage, requestId: number}>) => {
@@ -27,7 +27,7 @@ self.onmessage = async (e: MessageEvent<{msg: EngineMessage, requestId: number}>
   if (msg.type === 'runTask' && msg.task.type === 'autosave') {
     // serialize workbook object
     const autosaveTask = msg.task as AutosaveTask
-    autosaveTask.payload.serialized = serializeWorkbook(autosaveTask.payload.contentObj)
+    autosaveTask.payload.serialized = serializeWorkbook2(autosaveTask.payload.contentObj)
   }
 
   if (msg.type === 'runCommand') {

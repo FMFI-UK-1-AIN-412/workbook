@@ -2,7 +2,7 @@ import { AnyAction, createEntityAdapter, createSlice, EntityState, PayloadAction
 import undoable, { includeAction } from "redux-undo";
 import { AppDispatch, RootState } from '../../../app/store'
 import { ContextExtension, cellContext, clearContextMemo } from "./logicContext";
-import { deserializeWorkbook, serializeWorkbook } from "./workbookFormat";
+import { deserializeWorkbook, serializeWorkbook2 } from "./workbookFormat";
 import { WritableDraft } from "immer/dist/internal";
 
 export interface CellComment {
@@ -414,7 +414,7 @@ export function importFromFile() {
 export function downloadSheet() {
   return (dispatch: AppDispatch, getState: () => RootState) => {
     const state = getState();
-    const serialized = serializeWorkbook(state.sheet.present.sheetFile)
+    const serialized = serializeWorkbook2(state.sheet.present.sheetFile)
     const url = window.URL.createObjectURL(new Blob([serialized], { type: 'application/json' }));
     const link = document.createElement('a');
     link.setAttribute('download', state.sheet.present.filename);
