@@ -67,7 +67,6 @@
 
 .appCell {
   position: relative;
-  padding: map.get($spacers, 3);
 
   & .appContainer {
     pointer-events: none;
@@ -77,24 +76,20 @@
     pointer-events: initial;
   }
 
-  &.structureExplorerCell {
-    padding: map.get($spacers, 3) 0 0;
-  }
-
-  &.tableauEditorCell {
-    padding: map.get($spacers, 3) 0;
-  }
-
-  &.tableauEditorCell > * {
+  &.tableauEditorCell .appContainer {
+    padding: map.get($spacers, 3);
     overflow-x: auto;
-    padding: 0 map.get($spacers, 3);
+  }
+
+  .cellContainer:not(.isEdited) &.tableauEditorCell .appContainer {
+    padding-bottom: 0;
   }
 
   &.tableauEditorCell::before {
     content: '';
     position: absolute;
     left: 0;
-    top: 0;
+    top: map.get($spacers, 4);
     bottom: 0;
     width: map.get($spacers, 3);
     background-image: linear-gradient(90deg, $body-bg, rgba($body-bg, 0));
@@ -105,11 +100,27 @@
     content: '';
     position: absolute;
     right: 0;
-    top: 0;
+    top: map.get($spacers, 4);
     bottom: 0;
     width: map.get($spacers, 3);
     background-image: linear-gradient(270deg, $body-bg, rgba($body-bg, 0));
     z-index: 100;
+  }
+
+  &.resolutionEditorCell .appContainer {
+    padding: map.get($spacers, 3);
+  }
+
+  .cellContainer:not(.isEdited) &.resolutionEditorCell .appContainer {
+    padding-top: 0;
+  }
+
+  &.formalizationCheckerCell .appContainer {
+      padding: map.get($spacers, 3) map.get($spacers, 3) 0 map.get($spacers, 3);
+  }
+
+  &.newStructureExplorerCell .appContainer {
+      padding-bottom: map.get($spacers, 3);
   }
 
 }

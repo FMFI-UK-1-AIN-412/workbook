@@ -50,10 +50,11 @@ function AppCell({ cellLoc, isEdited, typeName, data, proof, onDataChanged, upda
 
   return (
     <div
-      className={`${styles.appCell} ${styles[`${typeName}Cell`]}`}
+      className={`${styles.appCell} ${styles[`${typeName}Cell`]} ${proof ? 'border-top' : ''}`}
       onDoubleClick={(e) => isEdited && e.stopPropagation()}
     >
       {!isEdited && <div className={styles.appOverlay} />}
+      <h6 className={`m-0 py-1 px-3 bg-light text-secondary border-bottom small text-uppercase`}>{getAppInfo(typeName)?.name || typeName}</h6>
       <div className={styles.appContainer}>
         <AppComponent
           isEdited={isEdited}
