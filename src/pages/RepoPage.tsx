@@ -58,11 +58,12 @@ export function makeRepoLink(filepath: string, fileType: 'file' | 'dir', owner: 
   }
   const { extension } = parseFilepath(filepath);
   const ePath = pathURIEncode(filepath);
-  if (extension === 'workbook') {
-    var url = `/sheet/${owner}/${repo}/${type}/${bPart}${ePath}`;
-  } else {
-    var url = `/repo/${owner}/${repo}/${type}/${bPart}${ePath}`;
-  }
+  const url = (extension === 'workbook') ?
+    `/sheet/${owner}/${repo}/${type}/${bPart}${ePath}`
+    : (fileType === 'dir') ?
+    `/repo/${owner}/${repo}/${type}/${bPart}${ePath}`
+    :
+    `https://github.com/${owner}/${repo}/${type}/${bPart}${ePath}`;
   return openAs === undefined ? url : `${url}?openAs=${openAs}`
 }
 
@@ -84,11 +85,13 @@ function RepoPage() {
     const { extension } = parseFilepath(filepath);
     if (extension === 'workbook') {
       return {changeIcon: <FileEarmarkRuledFill/>}
+    } else if (type === 'file') {
+      return {changeExternal: true}
     }
     return {}
   }
 
-  const urlPath = params['*'] || '';
+  const urlPath = params['*'] ?? '';
   console.log('URL path: ' + urlPath);
   const parsed = parseGithubUrlPath(urlPath);
   let body;
@@ -112,8 +115,7 @@ function RepoPage() {
   return (
     <Container>
       <h1 className="my-3">
-        {params.repo!!}{" "}
-        <small className="text-muted">{params.owner}</small>
+        <small className="text-muted">{params.owner}<span className="mx-2">/</span></small>{params.repo!!}
       </h1>
       {body}
     </Container>

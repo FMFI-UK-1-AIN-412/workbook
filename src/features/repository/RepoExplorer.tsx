@@ -1,5 +1,5 @@
 import { Alert, Badge, Card, ListGroup, Placeholder, Spinner, Row, Col, Dropdown, BadgeProps } from "react-bootstrap";
-import { FileEarmark, FileEarmarkPlusFill, FolderFill, SlashCircle } from 'react-bootstrap-icons';
+import { FileEarmark, FileEarmarkPlusFill, FolderFill, BoxArrowUpRight, SlashCircle } from 'react-bootstrap-icons';
 import { Link } from "react-router-dom";
 import Pathbar from "./Pathbar";
 import { ContentDirectory, ReposGetContentApiResponse, ReposListBranchesApiResponse, useReposGetContentQuery, useReposGetQuery, useReposListBranchesQuery } from "../../api/githubApi/endpoints/repos";
@@ -24,7 +24,7 @@ export interface RepoExplorerProps {
   branch?: string,
   path: string,
   makeLink: (path: string, fileType: 'file' | 'dir', owner: string, repo: string, branch?: string, openAs?: string) => string
-  transformFileItem?: (path: string, fileType: 'file' | 'dir') => { changeIcon?: JSX.Element }
+  transformFileItem?: (path: string, fileType: 'file' | 'dir') => { changeIcon?: JSX.Element, changeExternal?: boolean }
 }
 
 type FileItem = {
@@ -126,21 +126,21 @@ function RepoExplorer(props: RepoExplorerProps) {
   const folderIcon = <FolderFill />
   const fileIcon = <FileEarmark />
 
-  const loading = <div style={{ width: '100%', textAlign: 'center' }}><Spinner animation="grow" role="status" /></div>
+  const loading = <div className="my-3 text-center"><Spinner animation="border" role="status" /></div>
   const err = (message: string) => {
-    return <Alert variant="danger">{message}</Alert>
+    return <Alert variant="danger m-4">{message}</Alert>
   }
 
   const emptyOrError = (error: FetchBaseQueryError | SerializedError) => {
     if (isEmptyRepoError(error)) {
       return (
-        <div className="text-center text-muted">
-          <SlashCircle style={{ margin: '5em', marginBottom: '2em' }} size={'10em'} />
-          <h3>The repository is empty</h3>
+        <div className="text-center text-muted fs-3">
+          <SlashCircle className="fs-2 m-4" />
+          The repository is empty
         </div>
       )
     }
-    return err('Načítanie súborov zlyhalo');
+    return err(`Načítanie súborov zlyhalo s chybou: ${error}`);
   }
 
   const renderFileItem = (file: FileItem) => {
@@ -154,11 +154,16 @@ function RepoExplorer(props: RepoExplorerProps) {
     }
     const link = makeLink(filePath, file.type, owner, repo, branch);
     let icon = file.type === 'file' ? fileIcon : folderIcon
+    let fileNameNode = <>{file.name}</>
+    let external = false;
 
     if (transformFileItem) {
-      let { changeIcon } = transformFileItem(filePath, file.type);
+      let { changeIcon, changeExternal } = transformFileItem(filePath, file.type);
       if (changeIcon) {
         icon = changeIcon;
+      }
+      if (changeExternal) {
+        external = changeExternal;
       }
     }
 
@@ -174,7 +179,13 @@ function RepoExplorer(props: RepoExplorerProps) {
     return (
       <ListGroup.Item className={styles.fileItem} key={file.name}>
         <span className={styles.itemIcon}>{icon}</span>
-        {link ? <Link className={styles.linkStyle} style={{ marginRight: '1em' }} to={link}>{file.name}</Link> : file.name}
+        {link ?
+          <Link className={styles.linkStyle} style={{ marginRight: '1em' }} to={link} target={external ? '_blank' : undefined}>
+            {file.name}{ external && <BoxArrowUpRight className="small ms-2 align-baseline"/>}
+          </Link>
+          :
+          file.name
+        }
         <UnsavedChanges {...{ owner, repo, branch, branches: branches.data, path: filePath, makeLink }} />
       </ListGroup.Item>
     )
