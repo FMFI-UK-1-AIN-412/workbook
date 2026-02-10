@@ -1,9 +1,9 @@
 import { Base64 } from "js-base64";
 import { ReposGetContentApiResponse, useReposGetContentQuery } from "../../api/githubApi/endpoints/repos";
-import FormattedTextRenderer from "../../components/FormattedTextRenderer";
+import FormattedTextRenderer, { repoUriTransformer } from "../../components/FormattedTextRenderer";
 import { pathURIEncode } from "../../storageWorker/githubStorage/utils";
 import { Card } from "react-bootstrap";
-import { CgReadme } from 'react-icons/cg'
+import { Book } from 'react-bootstrap-icons'
 
 export interface RepoReadmeProps {
   owner: string,
@@ -42,13 +42,16 @@ export default function DisplayReadme({ owner, repo, branch, path }: RepoReadmeP
   })
   const content = readmeContent(fileContent.data)
   
-  return content ? (
+  return (readme && content) ? (
     <Card className="mb-5">
       <Card.Header className="h6">
-        <CgReadme /> Readme
+        <Book className="me-2" />{readme}
       </Card.Header>
-      <Card.Body>
-        <FormattedTextRenderer text={content} />
+      <Card.Body as="article">
+        <FormattedTextRenderer
+          text={content}
+          uriTransformer={repoUriTransformer(`/${owner}/${repo}/blob/${branch}${pathURIEncode(path)}`)}
+        />
       </Card.Body>
     </Card>
   )
