@@ -22,7 +22,7 @@ const UpdatingPopover = React.forwardRef<HTMLDivElement, PopoverProps>(
       popper.scheduleUpdate();
     }, [popper, children]);
     return (
-      <Popover ref={ref} body {...props} className={`${props.className || ''}`}>
+      <Popover ref={ref} {...props} className={`${props.className || ''}`}>
         {children}
       </Popover>
     );

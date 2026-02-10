@@ -25,7 +25,7 @@ function Navigation() {
           accessToken ?
             (
               <PopoverNavLink title={<><Image roundedCircle src={user?.avatarUrl} className="me-2" style={{ height: '1.5rem' }} />{user?.login}</>}>
-                <Nav.Link as={Link} to="/logout">Odhlásiť sa</Nav.Link>
+                <Link className="d-block px-3 py-2" to="/logout">Odhlásiť sa</Link>
               </PopoverNavLink>
             )
             : <Nav.Link href={getLoginUrl()}>Prihlásiť sa</Nav.Link>

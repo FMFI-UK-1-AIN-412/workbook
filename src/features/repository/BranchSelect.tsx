@@ -2,7 +2,7 @@ import React, { useEffect, useMemo } from "react";
 import { useState } from "react";
 import { Alert, Button, ListGroup, OverlayTrigger, Popover, PopoverProps, Spinner } from "react-bootstrap";
 import { BiGitBranch } from "react-icons/bi";
-import { BsCaretDownFill, BsCircle, BsCircleFill, BsSlashCircle } from "react-icons/bs";
+import { CheckLg, SlashCircle } from "react-bootstrap-icons";
 import { Link } from "react-router-dom";
 import { ReposGetApiResponse, ReposListBranchesApiResponse, useReposGetQuery, useReposListBranchesQuery } from "../../api/githubApi/endpoints/repos";
 import { displayLoadable } from "./displayLoadable";
@@ -24,8 +24,10 @@ const UpdatingPopover = React.forwardRef<HTMLDivElement, PopoverProps>(
       popper.scheduleUpdate();
     }, [popper, children]);
     return (
-      <Popover ref={ref} body {...props}>
-        {children}
+      <Popover ref={ref} {...props}>
+        <Popover.Body className="p-0">
+          {children}
+        </Popover.Body>
       </Popover>
     );
   },
@@ -49,7 +51,7 @@ function BranchSelect(props: BranchSelectProps) {
     if (data.length === 0) {
       return (
         <div className="text-center text-muted">
-          <BsSlashCircle style={{ margin: '1em' }} size={'2em'} />
+          <SlashCircle className="m-3" size={'2em'} />
         </div>
       )
     }
@@ -58,13 +60,13 @@ function BranchSelect(props: BranchSelectProps) {
     const branches = data.filter(b => !isSessionBranchName(b.name));
 
     return (
-      <ListGroup variant="flush">
+      <ListGroup className="rounded-3" variant="flush">
         {branches.map(b => {
           const linkTo = makeLink(path, 'dir', owner, repo, b.name);
           const active = b.name === branch;
           return (
             <ListGroup.Item action key={b.name}>
-              <Link className={styles.linkStyle} to={linkTo} onClick={() => document.body.click()}>{active ? <BsCircleFill size={'0.7em'} /> : <BsCircle size={'0.7em'} />} {b.name}</Link>
+              <Link className={styles.linkStyle} to={linkTo} onClick={() => document.body.click()}>{active ? <CheckLg /> : <span className="p-2" />} {b.name}</Link>
             </ListGroup.Item>
           )
         })}
@@ -77,7 +79,7 @@ function BranchSelect(props: BranchSelectProps) {
     return displayLoadable(branches, loadingSmall, renderList, () => err('Načítanie vetiev zlyhalo'))
   }, [branches, branch, loadingSmall, renderList]);
 
-  const renderBranchName = (name: string) => <><BiGitBranch />{name}<BsCaretDownFill /></>
+  const renderBranchName = (name: string) => <><BiGitBranch className="me-1"/>{name}</>
   return (
       <OverlayTrigger
         trigger="click"
@@ -86,7 +88,7 @@ function BranchSelect(props: BranchSelectProps) {
         rootClose
         overlay={(props) => <UpdatingPopover {...props}>{memoizedContent}</UpdatingPopover>}
       >
-        <Button>
+        <Button className="dropdown-toggle">
           {
             branch ?
               renderBranchName(branch)
