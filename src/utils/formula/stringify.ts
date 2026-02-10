@@ -69,8 +69,8 @@ export const unicodeFactory = (context?: CellContext) => {
     disjunction: (lhs, rhs) => `(${lhs} ∨ ${rhs})`,
     implication: (lhs, rhs) => `(${lhs} → ${rhs})`,
     equivalence: (lhs, rhs) => `(${lhs} ↔ ${rhs})`,
-    existentialQuant: (variable, subf) => `∃ ${variable} ${subf}`,
-    universalQuant: (variable, subf) => `∀ ${variable} ${subf}`,
+    existentialQuant: (variable, subf) => `∃${variable} ${subf}`,
+    universalQuant: (variable, subf) => `∀${variable} ${subf}`,
     functionApplication: (symbol, args, ee) => {
       testArity(symbol, args, ee);
       return `${symbol}(${args.join(', ')})`

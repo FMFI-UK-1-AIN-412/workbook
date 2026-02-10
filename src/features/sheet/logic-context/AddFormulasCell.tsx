@@ -4,7 +4,8 @@ import { ContextExtension, NamedFormula } from "../slice/logicContext";
 import { CellLocator, sheetActions, sheetSelectors } from "../slice/sheetSlice";
 import { parseFormulaWithPrecedence } from "@fmfi-uk-1-ain-412/js-fol-parser"
 import { useDispatch } from "react-redux";
-import { asciiFactory } from "../../../utils/formula/stringify";
+import { unicodeFactory } from "../../../utils/formula/stringify";
+import ContextCell from "./ContextCell";
 import { FormulaAdder, FormulaList } from "../../../components/Formula";
 
 interface AddAxiomsCellProps {
@@ -12,6 +13,7 @@ interface AddAxiomsCellProps {
   isEdited: boolean,
   katexMacros: object,
   title: string,
+  variant?: string,
   makeContextExtension: (formulas: NamedFormula[]) => ContextExtension
   onDataChanged: (getData: () => any) => void,
 }
@@ -28,14 +30,14 @@ type LocalActions =
   | { type: 'delete', payload: { index: number, count: number } };
 export const initialAddFormulasCellData: LocalState = [];
 
-export default function AddFormulasCell({ cellLoc, isEdited, title, makeContextExtension, onDataChanged }: AddAxiomsCellProps) {
+export default function AddFormulasCell({ cellLoc, isEdited, title, variant, makeContextExtension, onDataChanged }: AddAxiomsCellProps) {
   const data = useAppSelector(sheetSelectors.cell(cellLoc)).data as LocalState;
   const context = useAppSelector(sheetSelectors.logicContext(cellLoc));
   const dispatch = useDispatch();
 
   const parse = (formula: string) => {
     try {
-      return parseFormulaWithPrecedence(formula, context, asciiFactory(context));
+      return parseFormulaWithPrecedence(formula, context, unicodeFactory(context));
     } catch (_) {
       return undefined;
     }
@@ -78,21 +80,18 @@ export default function AddFormulasCell({ cellLoc, isEdited, title, makeContextE
 
 
   return (
-    <div style={{ padding: '1rem' }}>
-      <p>{title}</p>
-      <div style={{paddingLeft: '1rem'}}>
-        {isEdited ?
-          <FormulaAdder
-            context={context}
-            formulas={localState}
-            onChange={(index, item) => localDispatch({ type: 'change', payload: { index, item } })}
-            onAdd={item => localDispatch({ type: 'add', payload: item })}
-            onDelete={(index, count) => localDispatch({ type: 'delete', payload: { index, count } })}
-          />
-          :
-          <FormulaList context={context} formulas={localState} showCopy />
-        }
-      </div>
-    </div>
+    <ContextCell title={title} variant={variant}>
+      {isEdited ?
+        <FormulaAdder
+          context={context}
+          formulas={localState}
+          onChange={(index, item) => localDispatch({ type: 'change', payload: { index, item } })}
+          onAdd={item => localDispatch({ type: 'add', payload: item })}
+          onDelete={(index, count) => localDispatch({ type: 'delete', payload: { index, count } })}
+        />
+        :
+        <FormulaList context={context} formulas={localState} showCopy />
+      }
+    </ContextCell>
   )
 }

@@ -6,11 +6,13 @@ import AppCell from "../AppCell";
 import { CellContext, NamedFormula, Theorem } from "../slice/logicContext";
 import { CellLocator, sheetActions, sheetSelectors } from "../slice/sheetSlice";
 import { InlineMath } from 'react-katex';
+import ContextCell from "./ContextCell";
+import { ExclamationTriangleFill, InfoCircleFill } from "react-bootstrap-icons";
 import { useDispatch } from "react-redux";
 import produce from "immer";
 import { createFormulaAST, Negation, reconstructASTClause } from "../../../utils/formula/AST";
 import { formulaToClauseTheory } from "../../../utils/formula/CNFTransform";
-import { asciiFactory } from "../../../utils/formula/stringify";
+import { unicodeFactory } from "../../../utils/formula/stringify";
 import { SymbolWithArity, parseFormulaWithPrecedence } from "@fmfi-uk-1-ain-412/js-fol-parser";
 import classNames from 'classnames/dedupe';
 
@@ -90,7 +92,7 @@ export default function ProoveTheoremCell({ cellLoc, isEdited, data, onDataChang
   const { proof: preprocessedProof, ConversionDisplay } = useMemo(() => {
     let asciiFormula;
     try {
-      asciiFormula = parseFormulaWithPrecedence(localState.newTheorem.formula, context, asciiFactory(context))
+      asciiFormula = parseFormulaWithPrecedence(localState.newTheorem.formula, context, unicodeFactory(context))
     } catch (_) {
       return { proof: undefined, ConversionDisplay: undefined }
     }
@@ -116,7 +118,7 @@ export default function ProoveTheoremCell({ cellLoc, isEdited, data, onDataChang
   const changedTheoremHandler = (theorem: NamedFormula) => {
     let asciiFormula;
     try {
-      asciiFormula = parseFormulaWithPrecedence(theorem.formula, context, asciiFactory(context))
+      asciiFormula = parseFormulaWithPrecedence(theorem.formula, context, unicodeFactory(context))
     } catch (_) {
       asciiFormula = undefined;
     }
@@ -132,7 +134,7 @@ export default function ProoveTheoremCell({ cellLoc, isEdited, data, onDataChang
   const proofVerdictHandler = useCallback((verdict: boolean) => {
     let asciiFormula;
     try {
-      asciiFormula = parseFormulaWithPrecedence(localState.newTheorem.formula, context, asciiFactory(context))
+      asciiFormula = parseFormulaWithPrecedence(localState.newTheorem.formula, context, unicodeFactory(context))
     } catch (_) {
       asciiFormula = undefined;
     }
@@ -146,11 +148,8 @@ export default function ProoveTheoremCell({ cellLoc, isEdited, data, onDataChang
   }, [localState.verdict, localState.newTheorem, localDispatch, dispatch]);
 
   return (
-    <div
-      style={{ padding: '1rem' }}
-    >
-      Let
-      <div className="p-3">
+    <ContextCell title="Theorem" variant={localState.verdict ? 'success' : 'danger'} unpadded>
+      <div className="m-3">
         <Formula
           context={context}
           formula={localState.newTheorem}
@@ -166,9 +165,9 @@ export default function ProoveTheoremCell({ cellLoc, isEdited, data, onDataChang
       </div>
       {(preprocessedProof === undefined || localState.prooveWith === undefined) ? (
         // TODO possible proover data loss when changing 
-        <Dropdown>
+        <Dropdown className="m-3">
           <Dropdown.Toggle disabled={!localState.theoremCorrect} variant="success">
-            Proove with
+            Prove with
           </Dropdown.Toggle>
           <Dropdown.Menu>
             {embeddedApps.filter(app => app.supportsProofs).map(app => (
@@ -178,29 +177,26 @@ export default function ProoveTheoremCell({ cellLoc, isEdited, data, onDataChang
         </Dropdown>
       ) : (
         <>
-          {ConversionDisplay && <ConversionDisplay />}
-          <p>Proof of {localState.newTheorem.name.trim() === '' ? <i>new theorem</i> : <InlineMath math={`${localState.newTheorem.name}`} />}.</p>
-          <div className={classNames('border', { ['border-success']: localState.verdict })}>
-            <AppCell
-              cellLoc={cellLoc}
-              data={localState.prooverData}
-              isEdited={isEdited}
-              typeName={localState.prooveWith}
-              proof={preprocessedProof}
-              onDataChanged={getData => localDispatch({ type: 'update_proover_data', payload: getData })}
-              updateProofVerdict={proofVerdictHandler}
-            />
-          </div>
-          <p className="mt-2" style={{ color: localState.verdict ? 'green' : 'red' }}>
-            Theorem <InlineMath math={localState.newTheorem.name} /> was {localState.verdict ? '' : <strong>not</strong>} proved.
-          </p>
+          <h6 className={classNames('mx-3', { 'text-danger': !localState.verdict })}>
+            {localState.verdict ? <>Proof</> : <><ExclamationTriangleFill className="me-2 fs-5" />Unfinished proof</>}
+          </h6>
+          {ConversionDisplay && <ConversionDisplay isEdited={isEdited} />}
+          <AppCell
+            cellLoc={cellLoc}
+            data={localState.prooverData}
+            isEdited={isEdited}
+            typeName={localState.prooveWith}
+            proof={preprocessedProof}
+            onDataChanged={getData => localDispatch({ type: 'update_proover_data', payload: getData })}
+            updateProofVerdict={proofVerdictHandler}
+          />
         </>
       )}
-    </div>
+    </ContextCell>
   )
 }
 
-function prepareProofAssingment(proof: ProofAssignment, context: CellContext, appType: string): { proof: any, ConversionDisplay?: () => JSX.Element } {
+function prepareProofAssingment(proof: ProofAssignment, context: CellContext, appType: string): { proof: any, ConversionDisplay?: (props: { isEdited: boolean }) => JSX.Element } {
   if (appType === 'resolutionEditor') {
     let extendedContext = context;
     const convertFormula = (f: NamedFormula, negate: boolean = false) => {
@@ -216,7 +212,7 @@ function prepareProofAssingment(proof: ProofAssignment, context: CellContext, ap
       });
 
       return {
-        [f.name]: astClauses.map(c => reconstructASTClause(c, asciiFactory(extendedContext))) as string[]
+        [f.name]: astClauses.map(c => reconstructASTClause(c, unicodeFactory(extendedContext))) as string[]
       }
     }
 
@@ -242,18 +238,18 @@ function prepareProofAssingment(proof: ProofAssignment, context: CellContext, ap
 
     return {
       proof: { extendedContext, axiomsConv, theoremsConv, newTheoremConv },
-      ConversionDisplay: () => ResolvenceConversion({
+      ConversionDisplay: (_props) => ResolvenceConversion({
         conversions: [
           { desc: 'Axioms conversion: ', negate: false, conv: axiomsConv },
-          { desc: 'Proved theorems conversion: ', negate: false, conv: theoremsConv },
-          { desc: 'Theorem negation conversion: ', negate: true, conv: newTheoremConv }
+          { desc: 'Already proved theorems conversion: ', negate: false, conv: theoremsConv },
+          { desc: 'Current theorem negation conversion: ', negate: true, conv: newTheoremConv }
         ],
         context: extendedContext
       })
     }
   } else {
     return {
-      proof, ConversionDisplay: () => AxiomsList({context})
+      proof, ConversionDisplay: ({isEdited}) => isEdited ? AxiomsList({context}) : <></>
     }
   }
 }
@@ -269,7 +265,7 @@ interface CNFConversionProps {
 }
 function ResolvenceConversion({ conversions, context }: CNFConversionProps) {
   return (
-    <div>
+    <div className="px-3 mb-3">
       <p>Formulas used in resolution editor must be converted to equisatisfiable clausal theories.</p>
       {conversions
         .map(c => ({
@@ -280,27 +276,24 @@ function ResolvenceConversion({ conversions, context }: CNFConversionProps) {
           )
         }))
         .filter(c => Object.keys(c.conv).length > 0).map(c => (
-          <div key={c.desc}>
-            {c.desc}
-            <div className='ml-2 mt-2'>
-              <table className="ms-3">
-                <tbody>
-                  {Object.entries(c.conv)
-                    .filter(([_, conv]) => 'proved' in conv ? conv.proved : true)
-                    .map(([name, conv]) => 'clauses' in conv ? [name, conv.clauses] : [name, conv])
-                    .map(([name, clauses]) => (
-                      <tr key={name.toString()}>
-                        <td className="pe-4 py-1 align-top"><InlineMath math={`${c.negate ? '\\neg' : ''} ${name as string}`} />:</td>
-                        <td className="align-top">
-                          <FormulaList context={context} formulas={clauses as string[]} clause showCopy />
-                        </td>
-                      </tr>
-                    ))
-                  }
-                </tbody>
-              </table>
-
-            </div>
+          <div key={c.desc} className="mb-2">
+            <p className="mb-2">{c.desc}</p>
+            <table className="ms-4">
+              <tbody>
+                {Object.entries(c.conv)
+                  .filter(([_, conv]) => 'proved' in conv ? conv.proved : true)
+                  .map(([name, conv]) => 'clauses' in conv ? [name, conv.clauses] : [name, conv])
+                  .map(([name, clauses]) => (
+                    <tr key={name.toString()}>
+                      <td className="pe-4 pt-1 align-top"><InlineMath math={`${c.negate ? '\\neg' : ''} ${name as string}`} />:</td>
+                      <td className="align-top">
+                        <FormulaList context={context} formulas={clauses as string[]} clause showCopy />
+                      </td>
+                    </tr>
+                  ))
+                }
+              </tbody>
+            </table>
           </div>)
         )}
     </div >
@@ -317,10 +310,13 @@ function AxiomsList({ context }: { context: CellContext }) {
   }, [context.axioms, context.theorems])
 
   return (
-    <Accordion style={{marginBottom: '1rem'}}>
+    <Accordion className="border-top" flush>
       <Accordion.Item eventKey="0">
-        <Accordion.Header>List of axioms and proved theorems</Accordion.Header>
-        <Accordion.Body>
+        <Accordion.Header as="h6">
+          <InfoCircleFill className="me-2 text-secondary"/>
+          <span className="small text-uppercase text-secondary">Axioms and proved theorems</span>
+        </Accordion.Header>
+        <Accordion.Body className="small py-2">
           <FormulaList
             context={context}
             formulas={formulas}

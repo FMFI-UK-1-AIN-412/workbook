@@ -67,11 +67,13 @@ export function DisplayFormula({ formula, context, clause, showCopy, showEdit, o
       if (clause === true) {
         return {
           ascii: parseClause(origFormula, context, asciiFactory(context)),
+          unicode: parseClause(origFormula, context, unicodeFactory(context)),
           tex: parseClause(origFormula, context, texFactory(context)),
         }
       } else {
         return {
           ascii: parseFormulaWithPrecedence(origFormula, context, asciiFactory(context)),
+          unicode: parseFormulaWithPrecedence(origFormula, context, unicodeFactory(context)),
           tex: parseFormulaWithPrecedence(origFormula, context, texFactory(context)),
         }
       }
@@ -99,7 +101,7 @@ export function DisplayFormula({ formula, context, clause, showCopy, showEdit, o
             }
             {showCopy === true &&
               <Button className={styles.copyButton} size="sm" title="Copy to clipboard" variant="secondary"
-                onClick={() => navigator.clipboard.writeText(parsed.ascii)}
+                onClick={() => navigator.clipboard.writeText(parsed.unicode)}
               >
                 <BiCopy />
               </Button>
