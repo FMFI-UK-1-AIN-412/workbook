@@ -7,6 +7,9 @@ interface ListExercisesReposResponse {
     repositories: {
       nodes: Array<{
         name: string,
+        defaultBranchRef: {
+          name: string,
+        },
         object: {
           oid: string,
           text: string,
@@ -48,6 +51,9 @@ export const githubGqlApi = createApi({
               }
               nodes {
                 name
+                defaultBranchRef {
+                  name
+                }
                 object(expression: $expression) {
                   ... on Blob {
                     oid
