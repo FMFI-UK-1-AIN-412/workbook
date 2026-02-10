@@ -30,7 +30,7 @@ function RepoListPage() {
   if (authState !== "authenticated") {
     return <LoginPage msg="You have to be logged in to continue" readirectTo={location.pathname} />
   }
-  const makePageLink = (page: number) => page === 1 ? '/' : `/repos/${page}`;
+  const makePageLink = (page: number) => page === 1 ? '/repos' : `/repos/${page}`;
 
   return (
     <Container>
