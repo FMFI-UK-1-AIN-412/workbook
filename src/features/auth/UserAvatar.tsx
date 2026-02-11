@@ -8,14 +8,17 @@ export interface UserAvatarProps {
   className?: string,
   style?: React.CSSProperties,
   username?: string,
+  title?: string,
+  size?: string,
 }
 
 export default function UserAvatar(props: UserAvatarProps) {
   const user = useAppSelector(authSelectors.user)
   const avatarUrl = props.username ? `https://github.com/${props.username}.png` : user?.avatarUrl;
   const [err, setErr] = useState(false);
+  const sizeStyle = props.size ? { width: props.size, height: props.size } : {};
 
   return err
-    ? <RiAliensFill className={props.className} style={props.style} />
-    : <Image onError={() => setErr(true)} roundedCircle src={avatarUrl} className={props.className} style={props.style} />
+    ? <RiAliensFill className={props.className} style={{ ...props.style, ...sizeStyle }} title={props.title} />
+    : <Image onError={() => setErr(true)} roundedCircle src={avatarUrl} className={props.className} style={{ ...props.style, ...sizeStyle }} title={props.title} />
 }

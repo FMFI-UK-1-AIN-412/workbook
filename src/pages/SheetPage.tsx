@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ButtonGroup, ButtonToolbar, Container, Dropdown } from "react-bootstrap";
+import { Badge, ButtonGroup, ButtonToolbar, Container, Dropdown } from "react-bootstrap";
 import { useLocation, useParams, useSearchParams } from "react-router-dom";
 import { FileEarmarkRuledFill, GearFill } from "react-bootstrap-icons";
 import { authSelectors } from "../features/auth/authSlice";
@@ -7,6 +7,7 @@ import { useAppDispatch, useAppSelector } from "../app/hooks";
 import { makeRepoLink, parseFilepath, parseGithubUrlPath } from "./RepoPage";
 import Sheet from "../features/sheet/Sheet";
 import Pathbar from "../features/repository/Pathbar";
+import UserAvatar from "../features/auth/UserAvatar";
 import Err404Page from "./Err404Page";
 import BranchLabel from "../features/repository/BranchLabel";
 import LoginPage from "./LoginPage";
@@ -24,6 +25,8 @@ import RecomendedBranchModal from "../features/sheetStorage/github/RecomendedBra
 import HandInButton from "../features/sheetStorage/github/HandInButton";
 import { StorageNavigationBlocker } from "../features/sheetStorage/StorageNavigationBlocker";
 import { GhOpenPayload } from "../storageWorker/githubStorage1/ghEngine";
+import { useReposListBranchesQuery } from "../api/githubApi/endpoints/repos";
+import { getSessionBranchName } from "../storageWorker/githubStorage/utils";
 
 function SheetPage() {
   const authState = useAppSelector(authSelectors.authState);
@@ -41,7 +44,7 @@ function SheetPage() {
   useEffect(() => {
     let lastLoaded: GhOpenPayload | undefined = undefined
     if (ghLocation.current !== undefined && JSON.stringify(ghLocation.current) !== JSON.stringify(lastLoaded)) {
-      console.log('loading shhet')
+      console.log('loading sheet', ghLocation.current);
       lastLoaded = { ...ghLocation.current };
       dispatch(loadSheet('github1', ghLocation.current))
     }
@@ -60,7 +63,7 @@ function SheetPage() {
     if (type !== 'file' || extension !== 'workbook' || !owner || !repo || !branch) {
       return (<Err404Page />);
     } else {
-      const openAs = searchParams.get('openAs') || user.login;
+      const openAs = searchParams.get('openAs') ?? user.login;
       ghLocation.current = { owner, repo, path: path, ref: branch, openAs };
       return (
         <Container fluid className={classNames("w-100 m-0 p-0 bg-body", styles.sheetContainer)}>
@@ -76,9 +79,17 @@ function SheetPage() {
               <FileEarmarkRuledFill />
               <BranchLabel branch={branch} />
               <Pathbar owner={owner} path={path} branch={branch} repoName={repo} makeLink={makeRepoLink} />
+              {openAs !== user.login &&
+              <Badge pill bg="warning" className="fs-6 py-0 pe-0 ms-2 text-bg-warning">
+                Opened as
+                <UserAvatar className="mx-1 bg-white rounded-circle border border-2 border-warning"
+                  size='2.25rem'
+                  title={openAs || LEGACY} username={openAs || LEGACY} />
+              </Badge>}
             </div>
-            <div><SaveIndicator style={{ marginLeft: '1rem' }} /></div>
+            <div className="mx-3"><SaveIndicator /></div>
             <div style={{ flexGrow: '1' }}></div>
+            <AlsoEditedBy owner={owner} repo={repo} branch={branch} path={path} openAs={openAs} className="me-3"/>
             <ButtonToolbar className="d-inline-block">
               <UndoRedoButtonGroup />
               <ButtonGroup className="me-2">
@@ -110,6 +121,47 @@ function SheetPage() {
       )
     }
   }
+}
+
+type AlsoEditedByProps = {
+  owner: string,
+  repo: string,
+  branch: string,
+  path: string,
+  openAs: string,
+  className?: string,
+}
+
+const LEGACY = 'Legacy user';
+
+function AlsoEditedBy({ owner, repo, branch, path, openAs, className }: AlsoEditedByProps) {
+  const branches = useReposListBranchesQuery({ owner: owner, repo: repo, perPage: 100 });
+
+  if (branches.isLoading || branches.isError || branches.data === undefined) {
+    return <></>
+  }
+
+  const expectedSessionBranchName = getSessionBranchName({ owner, repo, path, ref: branch || '' });
+  const editingUsers = branches.data
+    ?.filter(b => b.name.startsWith(expectedSessionBranchName))
+    .map(b => b.name.slice(expectedSessionBranchName.length + 1))
+    .filter(username => username !== openAs)
+    .map(username => username || LEGACY)
+    || [];
+
+  if (editingUsers.length === 0) {
+    return <></>
+  }
+
+  return (
+    <span title={`Also edited by ${editingUsers.join(', ')}`} className={className}>
+      {editingUsers.map(username =>
+        <UserAvatar key={username} username={username}
+          className="me-1 border border-2 border-danger rounded-circle" size='2.25rem' />
+      )}
+    </span>
+  );  
+
 }
 
 export default SheetPage;

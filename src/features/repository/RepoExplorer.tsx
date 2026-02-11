@@ -17,6 +17,7 @@ import DisplayReadme from "./DisplayReadme";
 import UserAvatar from "../auth/UserAvatar";
 import React from "react";
 import { BsPrefixRefForwardingComponent } from "react-bootstrap/esm/helpers";
+import { classicNameResolver } from "typescript";
 
 export interface RepoExplorerProps {
   owner: string,
@@ -70,43 +71,54 @@ const BadgeToggle = React.forwardRef<HTMLSpanElement, BadgeProps>(({ children, o
   </Badge>
 ));
 
+
 type UnsavedChangesProps = Pick<RepoExplorerProps, 'owner' | 'repo' | 'path' | 'branch' | 'makeLink'> & {
   branches: ReposListBranchesApiResponse | undefined
 }
+
+const LEGACY = 'Legacy user';
+
 function UnsavedChanges({ owner, repo, path, branch, branches, makeLink }: UnsavedChangesProps) {
   if (branches === undefined) {
     return <></>
   }
 
   const expectedSessionBranchName = getSessionBranchName({ owner, repo, path, ref: branch || '' });
-  const editedBranches = branches
-    ?.filter(b => b.name.startsWith(expectedSessionBranchName))
-    .map(b => b.name) || [];
-  const isEdited = editedBranches.length > 0
-  const editingUsers = editedBranches
-    ?.filter(n => n.startsWith(expectedSessionBranchName) && n.length > expectedSessionBranchName.length + 1)
-    .map(n => n.slice(expectedSessionBranchName.length + 1)) || []
+  const editingUsers = branches
+    .filter(b => b.name.startsWith(expectedSessionBranchName))
+    .map(b => b.name.slice(expectedSessionBranchName.length + 1))
+    || [];
 
-  if (isEdited === false) {
+  if (editingUsers.length === 0) {
     return <></>
   }
 
-  return editingUsers.length > 0 ? (
+  return (
     <Dropdown className="d-inline">
-      <Dropdown.Toggle as={BadgeToggle} pill bg="secondary" title={editingUsers.length ? `Edited by ${editingUsers.join(', ')}` : undefined}>
-        unmerged
-        {editingUsers.map(username => <UserAvatar key={username} className="ms-2" style={{ maxHeight: '1rem' }} username={username} />)}
+      <Dropdown.Toggle as={BadgeToggle} pill bg="secondary"
+        title={`Edited by ${editingUsers.map(username => username || LEGACY).join(', ')}`}>
+        Unmerged
+        {editingUsers.map(username =>
+          <UserAvatar key={username || LEGACY} username={username || LEGACY}
+            className="rounded-circle ms-1" size='.75rem'
+          />)}
       </Dropdown.Toggle>
       <Dropdown.Menu>
         <Dropdown.Header>Open as</Dropdown.Header>
-        {editingUsers.map(username => <Dropdown.Item key={username} as='div'>
-          <Link className={styles.linkStyle} to={makeLink(path, 'file', owner, repo, branch, username)}>
-            <UserAvatar key={username} className="ms-2" style={{ maxHeight: '1rem' }} username={username} /> {username}
-          </Link>
-        </Dropdown.Item>)}
+        {editingUsers.map(username =>
+          <Dropdown.Item key={username} as={() =>
+            <Link key={username || LEGACY} className="dropdown-item"
+              to={makeLink(path, 'file', owner, repo, branch, username || '')}>
+              <UserAvatar username={username || LEGACY}
+                size='1.5rem' className="me-1 rounded-circle"
+              />
+              {username || LEGACY}
+            </Link>
+          }/>
+        )}
       </Dropdown.Menu>
     </Dropdown>
-  ) : <Badge pill bg="secondary">unmerged</Badge>
+  );
 }
 
 function RepoExplorer(props: RepoExplorerProps) {
