@@ -100,7 +100,7 @@ function UnsavedChanges({ owner, repo, path, branch, branches, makeLink }: Unsav
         Unmerged
         {editingUsers.map(username =>
           <UserAvatar key={username || LEGACY} username={username || LEGACY}
-            className="rounded-circle ms-1" size='.75rem'
+            className="rounded-circle ms-1 bg-white text-secondary" size='.75rem'
           />)}
       </Dropdown.Toggle>
       <Dropdown.Menu>
