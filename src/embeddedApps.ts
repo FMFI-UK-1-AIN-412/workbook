@@ -3,6 +3,7 @@ import StructureExplorer from '@fmfi-uk-1-ain-412/fol-graphexplorer';
 import TableauEditor from '@fmfi-uk-1-ain-412/tableaueditor';
 import FormalizationCheckerConf from '@fmfi-uk-1-ain-412/formalization-checker';
 import NewStructureExplorer from '@fmfi-uk-1-ain-412/structure-explorer';
+import '@fmfi-uk-1-ain-412/structure-explorer/dist/structure-explorer.css'
 import config from './config.json';
 import { CellContext } from './features/sheet/slice/logicContext';
 
