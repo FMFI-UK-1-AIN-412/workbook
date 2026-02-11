@@ -4,7 +4,7 @@ import { MdCheck } from "react-icons/md";
 import { useAppDispatch, useAppSelector } from "../../../app/hooks";
 import Loading from "../../../components/Loading";
 import { storageActions, storageSelectors } from "../storageSlice";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export default function MergeButton() {
   const dispatch = useAppDispatch();
@@ -13,6 +13,8 @@ export default function MergeButton() {
   const engine = useAppSelector(storageSelectors.storageEngine);
   const mergeTask = useAppSelector(state => storageSelectors.monitorTask(state, 'merge'))
   const mergeState = mergeTask?.task.state
+  const unsyncedChanges = useAppSelector(storageSelectors.unsyncedChanges)
+  const [mergeSuccess, setMergeSuccess] = useState<boolean>(mergeState === 'success' && unsyncedChanges === 0);
 
   useEffect(() => {
     // cancel merging if some saving task before failed
@@ -23,6 +25,18 @@ export default function MergeButton() {
       }
     }
   }, [queueState, dispatch, mergeTask])
+
+  useEffect(() => {
+    console.log(`Merge state changed: ${mergeState}`);
+    setMergeSuccess(mergeState === 'success');
+  }, [mergeState])
+
+  useEffect(() => {
+    console.log(`Unsynced changes or queue state changed: unsyncedChanges=${unsyncedChanges}, queueState=${queueState}`);
+    if (unsyncedChanges > 0 || (queueState !== 'idle' && queueState !== 'task_finished')) {
+      setMergeSuccess(false);
+    }
+  }, [unsyncedChanges, queueState])
 
   if (!engine || !['github', 'github1'].find(e => e === engine?.type)) {
     return <></>
@@ -64,7 +78,7 @@ export default function MergeButton() {
     <Button variant={variant} title={mergeState === 'cancelled' ? 'Merging was cancelled' : ''} disabled={disabled} onClick={startMerge}>
       <IoMdGitMerge />&nbsp;Merge changes
       {(mergeState === 'waiting' || mergeState === 'processing') && <>&nbsp;<Loading compact /></>}
-      {mergeState === 'success' && <>&nbsp;<MdCheck /></>}
+      {mergeSuccess && <>&nbsp;<MdCheck /></>}
     </Button>
   )
 }
