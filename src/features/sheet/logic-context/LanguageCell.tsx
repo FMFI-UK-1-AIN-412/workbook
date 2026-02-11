@@ -139,7 +139,7 @@ export default function LanguageCell({ cellLoc, isEdited, onDataChanged }: Langu
             key={name}
             label={symsetDefIntro(name, isExtension)}
             value={value}
-            updateFunction={setValue}
+            updateFunction={v => updateData(v, setValue)}
             parser={parser}
             parseError={parseError}
             setParseError={setParseError}
