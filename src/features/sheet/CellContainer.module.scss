@@ -119,8 +119,4 @@
       padding: map.get($spacers, 3) map.get($spacers, 3) 0 map.get($spacers, 3);
   }
 
-  &.newStructureExplorerCell .appContainer {
-      padding-bottom: map.get($spacers, 3);
-  }
-
 }
