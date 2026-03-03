@@ -1,6 +1,7 @@
 import { Alert, Badge, Card, ListGroup, Placeholder, Spinner, Row, Col, Dropdown, BadgeProps } from "react-bootstrap";
 import { FileEarmark, FileEarmarkPlusFill, FolderFill, BoxArrowUpRight, SlashCircle } from 'react-bootstrap-icons';
 import { Link } from "react-router-dom";
+import { Helmet } from "react-helmet";
 import Pathbar from "./Pathbar";
 import { ContentDirectory, ReposGetContentApiResponse, ReposListBranchesApiResponse, useReposGetContentQuery, useReposGetQuery, useReposListBranchesQuery } from "../../api/githubApi/endpoints/repos";
 import BranchSelect from "./BranchSelect";
@@ -233,6 +234,7 @@ function RepoExplorer(props: RepoExplorerProps) {
 
   return (
     <>
+      <Helmet title={`${owner}/${repo}${path ? `/${path}` : ''} at ${branch}`} />
       <Card className="mb-4">
         <Card.Header className="h6">
           <Row className="g-2 align-items-baseline">

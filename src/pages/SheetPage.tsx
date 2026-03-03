@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Badge, ButtonGroup, ButtonToolbar, Container, Dropdown } from "react-bootstrap";
 import { useLocation, useParams, useSearchParams } from "react-router-dom";
+import { Helmet } from 'react-helmet';
 import { FileEarmarkRuledFill, GearFill } from "react-bootstrap-icons";
 import { authSelectors } from "../features/auth/authSlice";
 import { useAppDispatch, useAppSelector } from "../app/hooks";
@@ -59,7 +60,7 @@ function SheetPage() {
     return <LoginPage msg="Pre pokračovanie sa musíte prihlásiť" readirectTo={location.pathname} />
   } else {
     const { branch, type, path } = repoParams;
-    const { extension } = parseFilepath(path);
+    const { directory, filename, extension } = parseFilepath(path);
     if (type !== 'file' || extension !== 'workbook' || !owner || !repo || !branch) {
       return (<Err404Page />);
     } else {
@@ -67,6 +68,7 @@ function SheetPage() {
       ghLocation.current = { owner, repo, path: path, ref: branch, openAs };
       return (
         <Container fluid className={classNames("w-100 m-0 p-0 bg-body", styles.sheetContainer)}>
+          <Helmet title={`${filename} · ${owner}/${repo}/${directory} at ${branch}`} />
 
           <MergeSheetModal show={mergeSheetModal} onClose={() => setMergeSheetModal(false)} />
           <SheetSettingsModal tab={settingsTab} onClose={() => setSettingsTab('NONE')} />

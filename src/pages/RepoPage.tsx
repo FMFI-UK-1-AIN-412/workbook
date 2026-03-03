@@ -7,6 +7,7 @@ import Err404Page from "./Err404Page";
 import LoginPage from "./LoginPage";
 import RepoExplorer from "../features/repository/RepoExplorer";
 import { pathURIEncode } from "../storageWorker/githubStorage/utils";
+import { Helmet } from "react-helmet";
 
 
 /**
@@ -67,13 +68,13 @@ export function makeRepoLink(filepath: string, fileType: 'file' | 'dir', owner: 
   return openAs === undefined ? url : `${url}?openAs=${openAs}`
 }
 
-export function parseFilepath(filepath: string): {filename: string, extension: string} {
+export function parseFilepath(filepath: string): {directory: string, filename: string, extension: string} {
   const dPath = filepath.split('/').map(p => decodeURIComponent(p)).reduce((p, c) => `${p}/${c}`);
   const a = dPath.split('/');
   const filename = a[a.length-1];
   const b = filename.split('.');
   const extension = b[b.length-1];
-  return {filename, extension}
+  return {directory: a.slice(0, a.length-1).join('/'), filename, extension}
 }
 
 function RepoPage() {
@@ -114,6 +115,7 @@ function RepoPage() {
 
   return (
     <Container>
+      <Helmet title={`${params.owner}/${params.repo}`} />
       <h1 className="my-3">
         <small className="text-muted">{params.owner}<span className="mx-2">/</span></small>{params.repo!!}
       </h1>

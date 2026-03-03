@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { Helmet } from 'react-helmet';
 import "bootstrap/dist/css/bootstrap.min.css";
 import Navigation from './pages/Navigation';
 import SheetPage from './pages/SheetPage';
@@ -40,6 +41,7 @@ function App() {
 
 function Root() {
   return (<>
+    <Helmet defaultTitle="Logic Workbook" titleTemplate="%s · Logic Workbook"/>
     <Navigation />
     <Routes>
       <Route path='*' element={<Err404Page />} />

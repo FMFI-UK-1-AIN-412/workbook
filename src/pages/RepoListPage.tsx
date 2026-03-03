@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import { Col, Container, FormControl, Row } from "react-bootstrap";
 import { useLocation, useParams } from "react-router-dom";
+import { Helmet } from "react-helmet";
 import { authSelectors } from "../features/auth/authSlice";
 import { useAppSelector } from "../app/hooks";
 import CheckList from "../components/CheckList";
@@ -34,6 +35,7 @@ function RepoListPage() {
 
   return (
     <Container>
+      <Helmet title="Repositories" />
       <h1 className="my-3">Repositories</h1>
 
       <Row className="gx-3 gy-2 mb-3">
