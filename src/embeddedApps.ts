@@ -37,9 +37,9 @@ export const embeddedApps: EmeddedApp[] =
   [
     {
       name: 'Structure explorer',
-      typeName: 'structureExplorer',
+      typeName: 'newStructureExplorer',
       supportsProofs: false,
-      ...StructureExplorer
+      ...NewStructureExplorer
     },
     {
       name: 'Tableau editor',
@@ -60,11 +60,11 @@ export const embeddedApps: EmeddedApp[] =
       ...FormalizationCheckerConf(config.embeddedApps.formalizationChecker.backendUrl)
     },
     {
-      name: 'New Structure explorer',
-      typeName: 'newStructureExplorer',
+      name: 'Old structure explorer',
+      typeName: 'structureExplorer',
       supportsProofs: false,
-      ...NewStructureExplorer
-    }
+      ...StructureExplorer
+    },
   ];
 
 var appType2AppInfo: { [key: string]: EmeddedApp } = {};
