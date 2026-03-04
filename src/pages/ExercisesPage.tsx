@@ -25,7 +25,7 @@ export default function ExercisesPage() {
   const user = useAppSelector(authSelectors.user);
   const location = useLocation();
 
-  const exercisesRepo = useListExercisesReposQuery({ expression: 'HEAD:workbook.md' })
+  const exercisesRepo = useListExercisesReposQuery({ expression: 'workbook:workbook.md' })
   console.log(exercisesRepo)
 
   if (!user) {
@@ -64,7 +64,7 @@ export default function ExercisesPage() {
           <h2 className="h4">No workbooks found</h2>
           <p>
             None of your repositories contain a workbook summary document
-            (<code>workbook.md</code>).
+            (<code>workbook.md</code>) in the <code>workbook</code> branch.
           </p>
           <Link to="/repos" className="btn btn-primary">
             Browse repositories
