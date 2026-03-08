@@ -22,7 +22,7 @@ import classNames from 'classnames/dedupe';
 import styles from './SheetPage.module.scss';
 import { loadSheet, storageSelectors } from "../features/sheetStorage/storageSlice";
 import { downloadSheet, importFromFile } from "../features/sheet/slice/sheetSlice";
-import RecomendedBranchModal from "../features/sheetStorage/github/RecomendedBranchModal";
+import RecomendedBranchModal from "../features/sheetStorage/github/RecommendedBranchModal";
 import HandInButton from "../features/sheetStorage/github/HandInButton";
 import { StorageNavigationBlocker } from "../features/sheetStorage/StorageNavigationBlocker";
 import { GhOpenPayload } from "../storageWorker/githubStorage1/ghEngine";
