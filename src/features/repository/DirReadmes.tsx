@@ -86,7 +86,7 @@ export default function DirReadmes({ owner, repo, branch, path }: DirReadmesProp
       <Card.Header>
         <Nav variant="tabs">
           {existingReadmes.map(({name, Icon}, index) =>
-            <Nav.Item onClick={() => setReadmeIdx(index)}>
+            <Nav.Item key={index} onClick={() => setReadmeIdx(index)}>
               <Nav.Link active={index === readmeIdx}><Icon className="me-2" /> {name}</Nav.Link>
             </Nav.Item>
           )}
