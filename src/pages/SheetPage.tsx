@@ -137,9 +137,14 @@ type AlsoEditedByProps = {
 const LEGACY = 'Legacy user';
 
 function AlsoEditedBy({ owner, repo, branch, path, openAs, className }: AlsoEditedByProps) {
-  const branches = useReposListBranchesQuery({ owner: owner, repo: repo, perPage: 100 });
+  const branches = useReposListBranchesQuery({ owner: owner, repo: repo, perPage: 100 },
+    {
+      refetchOnMountOrArgChange: 30,
+      pollingInterval: 300000
+    }
+  );
 
-  if (branches.isLoading || branches.isError || branches.data === undefined) {
+  if (branches.isError || branches.data === undefined) {
     return <></>
   }
 

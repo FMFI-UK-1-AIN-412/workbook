@@ -127,8 +127,17 @@ function RepoExplorer(props: RepoExplorerProps) {
   let { branch } = props;
 
   const repoInfo = useReposGetQuery({ owner, repo }, { skip: branch !== undefined });
-  const branches = useReposListBranchesQuery({ owner, repo, perPage: 100 }, { skip: branch === undefined && !repoInfo.isSuccess });
-  const content = useReposGetContentQuery({ owner, repo, ref: branch, path: pathURIEncode(path) }, { skip: branch === undefined && !repoInfo.isSuccess && !branches.isSuccess });
+  const branches = useReposListBranchesQuery({ owner, repo, perPage: 100 },
+    { skip: branch === undefined && !repoInfo.isSuccess,
+      refetchOnMountOrArgChange: 30,
+      pollingInterval: 300000
+    });
+  const content = useReposGetContentQuery({ owner, repo, ref: branch, path: pathURIEncode(path) },
+    {
+      skip: branch === undefined && !repoInfo.isSuccess && !branches.isSuccess,
+      refetchOnMountOrArgChange: 30,
+      pollingInterval: 300000
+    });
 
   const existingFilenames = useRef<Set<string>>(new Set());
 
@@ -180,7 +189,7 @@ function RepoExplorer(props: RepoExplorerProps) {
       }
     }
 
-    if (content.isFetching) {
+    if (content.data === undefined && content.isFetching) {
       return (
         <ListGroup.Item className={styles.fileItem} key={file.name}>
           <span className={styles.itemIcon}>{icon}</span>
@@ -260,7 +269,7 @@ function RepoExplorer(props: RepoExplorerProps) {
         {displayLoadable(content, loading, renderFiles, emptyOrError)}
       </Card>
       { // display readme only after files have been shown
-        content && <DirReadmes {...{ owner, repo, path, branch }} />
+        content.data !== undefined && <DirReadmes {...{ owner, repo, path, branch }} />
       }
     </>
   )
