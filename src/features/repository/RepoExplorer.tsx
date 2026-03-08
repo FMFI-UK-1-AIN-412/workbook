@@ -14,7 +14,7 @@ import CreateFileButton from "./CreateFileButton";
 import { useRef } from "react";
 import { emptySheet } from "../sheet/slice/sheetSlice";
 import { getSessionBranchName, pathURIEncode } from "../../storageWorker/githubStorage/utils";
-import DisplayReadme from "./DisplayReadme";
+import DirReadmes from "./DirReadmes";
 import UserAvatar from "../auth/UserAvatar";
 import React from "react";
 import { BsPrefixRefForwardingComponent } from "react-bootstrap/esm/helpers";
@@ -260,7 +260,7 @@ function RepoExplorer(props: RepoExplorerProps) {
         {displayLoadable(content, loading, renderFiles, emptyOrError)}
       </Card>
       { // display readme only after files have been shown
-        content && <DisplayReadme {...{ owner, repo, path, branch }} />
+        content && <DirReadmes {...{ owner, repo, path, branch }} />
       }
     </>
   )
