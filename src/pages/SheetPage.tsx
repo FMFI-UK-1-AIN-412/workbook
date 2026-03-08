@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Badge, ButtonGroup, ButtonToolbar, Container, Dropdown } from "react-bootstrap";
-import { useLocation, useParams, useSearchParams } from "react-router-dom";
+import { useLocation, useParams, useSearchParams, Link } from "react-router-dom";
 import { Helmet } from 'react-helmet';
 import { FileEarmarkRuledFill, GearFill } from "react-bootstrap-icons";
 import { authSelectors } from "../features/auth/authSlice";
@@ -38,7 +38,7 @@ function SheetPage() {
   const { owner, repo } = params;
   const url = params['*']
   const repoParams = useMemo(() => parseGithubUrlPath(url || ''), [url]);
-  let [searchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const ghLocation = useRef<GhOpenPayload | undefined>(undefined);
   const dispatch = useAppDispatch();
 
@@ -49,7 +49,7 @@ function SheetPage() {
       lastLoaded = { ...ghLocation.current };
       dispatch(loadSheet('github1', ghLocation.current))
     }
-  }, [repoParams, dispatch]);
+  }, [repoParams, searchParams, dispatch]);
 
   const [settingsTab, setSettingsTab] = useState<SettingTab>('NONE')
   const [mergeSheetModal, setMergeSheetModal] = useState(false);
@@ -82,9 +82,9 @@ function SheetPage() {
               <BranchLabel branch={branch} />
               <Pathbar owner={owner} path={path} branch={branch} repoName={repo} makeLink={makeRepoLink} />
               {openAs !== user.login &&
-              <Badge pill bg="warning" className="fs-6 py-0 pe-0 ms-2 text-bg-warning">
+              <Badge pill bg="warning" className="py-0 pe-0 ms-2 text-bg-warning align-middle">
                 Opened as
-                <UserAvatar className="mx-1 bg-white rounded-circle border border-2 border-warning"
+                <UserAvatar className="ms-1 bg-white rounded-circle border border-2 border-warning"
                   size='2.25rem'
                   title={openAs || LEGACY} username={openAs || LEGACY} />
               </Badge>}
@@ -163,8 +163,11 @@ function AlsoEditedBy({ owner, repo, branch, path, openAs, className }: AlsoEdit
   return (
     <span title={`Also edited by ${editingUsers.join(', ')}`} className={className}>
       {editingUsers.map(username =>
-        <UserAvatar key={username} username={username}
-          className="me-1 border border-2 border-danger rounded-circle" size='2.25rem' />
+        <Link to={`/sheet/${owner}/${repo}/blob/${branch}/${path}?openAs=${username}`}
+          title={`Open as ${username}`}>
+          <UserAvatar key={username} username={username}
+            className="me-1 border border-2 border-danger rounded-circle" size='2.25rem' />
+        </Link>
       )}
     </span>
   );  
