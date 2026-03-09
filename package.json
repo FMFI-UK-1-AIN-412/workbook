@@ -92,6 +92,7 @@
     ]
   },
   "devDependencies": {
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
     "@types/lodash": "^4.17.0",
     "@types/react-helmet": "^6.1.11",
     "dotenv-cli": "^5.1.0",
