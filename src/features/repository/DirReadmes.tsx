@@ -81,7 +81,7 @@ export default function DirReadmes({ owner, repo, branch, path }: DirReadmesProp
   });
   const existingReadmes: Readme[] = findReadmes(dirContent.data);
   
-  return (dirContent.isSuccess && existingReadmes) ? (
+  return (dirContent.isSuccess && existingReadmes.length > 0) ? (
     <Card className="mb-5">
       <Card.Header>
         <Nav variant="tabs">
