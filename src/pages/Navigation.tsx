@@ -1,6 +1,6 @@
 import { Image, Nav, Navbar } from "react-bootstrap";
 import { Link, NavLink } from "react-router-dom";
-import { authSelectors } from "../features/auth/authSlice";
+import { authSelectors, requestRefreshTokens } from "../features/auth/authSlice";
 import { useAppSelector } from "../app/hooks";
 import { getLoginUrl } from "./LoginPage";
 import { PopoverNavLink } from "../components/PopoverMenu";
@@ -10,6 +10,7 @@ import config from '../config.json';
 function Navigation() {
   const accessToken = useAppSelector(authSelectors.accessToken);
   const user = useAppSelector(authSelectors.user);
+  
   return (
     <Navbar expand="sm" bg="dark" variant="dark">
       <Navbar.Brand href={config.frontend.basePath} className="ms-3">Workbook</Navbar.Brand>

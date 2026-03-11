@@ -23,12 +23,13 @@ const ExercisesPageWrapper = ({ children }: ExercisesPageWrapperProps) =>
 
 export default function ExercisesPage() {
   const user = useAppSelector(authSelectors.user);
+  const authState = useAppSelector(authSelectors.authState);
   const location = useLocation();
 
   const exercisesRepo = useListExercisesReposQuery({ expression: 'workbook:workbook.md' })
   console.log(exercisesRepo)
 
-  if (!user) {
+  if (!user || authState !== "authenticated") {
     return <LoginPage msg="Log in to view your workbooks" readirectTo={location.pathname} />
   }
 
