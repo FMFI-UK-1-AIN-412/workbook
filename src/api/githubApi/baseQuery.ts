@@ -1,5 +1,5 @@
 import { BaseQueryFn, FetchArgs, fetchBaseQuery, FetchBaseQueryError, FetchBaseQueryMeta } from "@reduxjs/toolkit/query/react";
-import { authActions, clearSavedAuthState } from "../../features/auth/authSlice";
+import { authActions, clearSavedAuthState, logout } from "../../features/auth/authSlice";
 import { AppDispatch, RootState } from '../../app/store';
 import config from "../../config.json";
 
@@ -38,6 +38,7 @@ const baseQuery = fetchBaseQuery({
       }
     } catch (e) {
       console.log("Failed to refresh:", e);
+      clearSavedAuthState();
       api.dispatch(authActions.logout());
     }
   }

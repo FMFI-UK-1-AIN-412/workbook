@@ -64,6 +64,7 @@ export const authSlice = createSlice({
     });
     builder.addCase(requestRefreshTokens.rejected, (state, action) => {
       state.authState = 'unauthenticated';
+      state.tokenState = 'noToken';
       state.error = action.error.message;
     });
     builder.addCase(requestLogout.pending, (state) => {
@@ -81,7 +82,7 @@ export const authSlice = createSlice({
     builder.addMatcher(githubApi.endpoints.usersGetAuthenticated.matchFulfilled,
       (state, { payload }) => {
         state.user = { login: payload.login, avatarUrl: payload.avatar_url }
-        state.authState = 'authenticated'
+        state.authState = 'authenticated';
         state.tokenState = 'tokenTested';
       });
   }
@@ -172,9 +173,9 @@ function getSavedUser(): User | undefined {
 }
 
 export const logout = () => {
-  return (dispatch: AppDispatch) => {
-    dispatch(authActions.logout());
+  return async (dispatch: AppDispatch) => {
     clearSavedAuthState();
+    dispatch(authActions.logout());
   }
 }
 
