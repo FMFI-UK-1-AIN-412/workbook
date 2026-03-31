@@ -1,6 +1,7 @@
 import { Alert, Badge, Card, ListGroup, Placeholder, Spinner, Row, Col, Dropdown, BadgeProps } from "react-bootstrap";
 import { FileEarmark, FileEarmarkPlusFill, FolderFill, BoxArrowUpRight, SlashCircle } from 'react-bootstrap-icons';
 import { Link } from "react-router-dom";
+import { Helmet } from "react-helmet";
 import Pathbar from "./Pathbar";
 import { ContentDirectory, ReposGetContentApiResponse, ReposListBranchesApiResponse, useReposGetContentQuery, useReposGetQuery, useReposListBranchesQuery } from "../../api/githubApi/endpoints/repos";
 import BranchSelect from "./BranchSelect";
@@ -13,7 +14,7 @@ import CreateFileButton from "./CreateFileButton";
 import { useRef } from "react";
 import { emptySheet } from "../sheet/slice/sheetSlice";
 import { getSessionBranchName, pathURIEncode } from "../../storageWorker/githubStorage/utils";
-import DisplayReadme from "./DisplayReadme";
+import DirReadmes from "./DirReadmes";
 import UserAvatar from "../auth/UserAvatar";
 import React from "react";
 import { BsPrefixRefForwardingComponent } from "react-bootstrap/esm/helpers";
@@ -126,8 +127,17 @@ function RepoExplorer(props: RepoExplorerProps) {
   let { branch } = props;
 
   const repoInfo = useReposGetQuery({ owner, repo }, { skip: branch !== undefined });
-  const branches = useReposListBranchesQuery({ owner, repo, perPage: 100 }, { skip: branch === undefined && !repoInfo.isSuccess });
-  const content = useReposGetContentQuery({ owner, repo, ref: branch, path: pathURIEncode(path) }, { skip: branch === undefined && !repoInfo.isSuccess && !branches.isSuccess });
+  const branches = useReposListBranchesQuery({ owner, repo, perPage: 100 },
+    { skip: branch === undefined && !repoInfo.isSuccess,
+      refetchOnMountOrArgChange: 30,
+      pollingInterval: 300000
+    });
+  const content = useReposGetContentQuery({ owner, repo, ref: branch, path: pathURIEncode(path) },
+    {
+      skip: branch === undefined && !repoInfo.isSuccess && !branches.isSuccess,
+      refetchOnMountOrArgChange: 30,
+      pollingInterval: 300000
+    });
 
   const existingFilenames = useRef<Set<string>>(new Set());
 
@@ -179,7 +189,7 @@ function RepoExplorer(props: RepoExplorerProps) {
       }
     }
 
-    if (content.isFetching) {
+    if (content.data === undefined && content.isFetching) {
       return (
         <ListGroup.Item className={styles.fileItem} key={file.name}>
           <span className={styles.itemIcon}>{icon}</span>
@@ -233,6 +243,7 @@ function RepoExplorer(props: RepoExplorerProps) {
 
   return (
     <>
+      <Helmet title={`${owner}/${repo}${path ? `/${path}` : ''} at ${branch}`} />
       <Card className="mb-4">
         <Card.Header className="h6">
           <Row className="g-2 align-items-baseline">
@@ -258,7 +269,7 @@ function RepoExplorer(props: RepoExplorerProps) {
         {displayLoadable(content, loading, renderFiles, emptyOrError)}
       </Card>
       { // display readme only after files have been shown
-        content && <DisplayReadme {...{ owner, repo, path, branch }} />
+        content.data !== undefined && <DirReadmes {...{ owner, repo, path, branch }} />
       }
     </>
   )

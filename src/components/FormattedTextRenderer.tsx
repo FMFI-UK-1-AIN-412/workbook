@@ -1,4 +1,5 @@
 import ReactMarkdown, { uriTransformer } from "react-markdown";
+import { useHref } from 'react-router';
 import rehypeKatex from "rehype-katex";
 import rehypeRaw from "rehype-raw";
 import rehypeSanitize, { defaultSchema } from 'rehype-sanitize'
@@ -94,8 +95,8 @@ function FormattedTextRenderer(props: FormattedTextRendererProps) {
   Transforms workbook sheet paths to paths in the app and other paths
   to Github paths.
 
-  basePath is the absolute GitHub blob path to the current directory,
-  not slash-terminated,
+  basePath is an absolute GitHub blob path to the current directory,
+  non-slash-terminated,
   i.e., `/{user}/{repo}/blob/{branch}{path_within_the_repo}`.
 */
 export function repoUriTransformer(basePath: string): UriTransformer {
@@ -119,7 +120,7 @@ export function repoUriTransformer(basePath: string): UriTransformer {
         (questionMark !== -1 && colon > questionMark) ||
         (numberSign !== -1 && colon > numberSign)
       ) && (
-        // There are no two initial slashes
+        // There are not two initial slashes
         slash !== 0 || uri.length === 1 || uri[1] !== '/'
       )
     ) {
@@ -127,11 +128,10 @@ export function repoUriTransformer(basePath: string): UriTransformer {
         slash === 0 ?
         uri :
         `${basePath}/${uri}`;
-      const transformedPath =
-        uri.endsWith('.workbook') ?
-          `sheet${absolutePath}` :
-          `https://github.com${absolutePath}`;
-      return uriTransformer(transformedPath);
+      if (uri.endsWith('.workbook')) {
+        return uriTransformer(useHref(`/sheet${absolutePath}`));
+      }
+      return uriTransformer(`https://github.com${absolutePath}`);
     }
     return uriTransformer(uri);
   };

@@ -45,22 +45,26 @@ function RecomendedBranchModal(props: RecomendedBranchModalProps) {
     >
       <Modal.Header closeButton>
         <Modal.Title id="contained-modal-title-vcenter">
-          Recomended branch
+          Recommended branch
         </Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <p>
-          This workbook has set recomended editing branch to '{sheetSettings.github?.editBranch}', but you are currently using '{addr.ref}'
+          It is recommended to edit this worksheet in the <code>{sheetSettings.github?.editBranch}</code> branch,
+          but you have opened it in the <code>{addr.ref}</code> branch.<br/>
+        </p>
+        <p className="mb-0">
+          Do you want to switch to the recommended branch?
         </p>
       </Modal.Body>
       <Modal.Footer>
-        <div className="mx-auto">
-          <Button className="mx-2" variant="secondary" onClick={() => setClosed(true)}>
-            Continue
+        <div className="hstack w-100 justify-content-between">
+          <Button className="mx-2" variant="outline-secondary" onClick={() => setClosed(true)}>
+            Stay in <code style={{color: "inherit"}}>{addr.ref}</code>
           </Button>
           <LinkContainer to={makeRepoLink(addr.path, 'file', addr.owner, addr.repo, sheetSettings.github?.editBranch)}>
-            <Button className="mx-2" variant="success">
-              Use recomended
+            <Button className="mx-2" variant="primary">
+              Switch to <code>{sheetSettings.github?.editBranch}</code>
             </Button>
           </LinkContainer>
         </div>
