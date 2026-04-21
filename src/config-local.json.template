@@ -1,18 +1,23 @@
 {
-  "githubApi": {
-    "clientId": ""
-  },
-  "backend": {
-    "authUrl": "http://localhost:4000/get_access_token"
-  },
-  "frontend": {
-    "basePath": "/",
-    "baseUrl": "http://localhost:3000",
-    "cellUpdateIntervalSec": 10
-  },
-  "embeddedApps": {
-    "formalizationChecker": {
-      "backendUrl": "https://student.dai.fmph.uniba.sk/services/formalization-checker"
+    "token_name": "Bearer",
+    "githubApi": {
+        "appId": ,
+        "clientId": ""
+    },
+    "backend": {
+        "baseUrl": "http://localhost:4000",
+        "authPath": "/get_access_token",
+        "refreshPath": "/refresh",
+        "logoutPath": "/logout"
+    },
+    "frontend": {
+        "basePath": "/",
+        "baseUrl": "http://localhost:3000",
+        "cellUpdateIntervalSec": 10
+    },
+    "embeddedApps": {
+        "formalizationChecker": {
+            "backendUrl": "https://student.dai.fmph.uniba.sk/services/formalization-checker"
+        }
     }
-  }
 }

@@ -1,5 +1,6 @@
 import { BaseQueryFn, FetchArgs, fetchBaseQuery, FetchBaseQueryError, FetchBaseQueryMeta } from "@reduxjs/toolkit/query/react";
 import { RootState } from "../store";
+import config from "../../../config.json";
 
 const baseQuery = fetchBaseQuery({ 
   baseUrl: "https://api.github.com/",
@@ -7,7 +8,7 @@ const baseQuery = fetchBaseQuery({
     
     const accessToken = (getState() as RootState).sheetStorage.ghToken;
     if (accessToken) {
-      headers.append('Authorization', `token ${accessToken}`);
+      headers.append('Authorization', `${config.token_name} ${accessToken}`);
     }
     return headers;
   },

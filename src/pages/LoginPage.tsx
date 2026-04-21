@@ -17,7 +17,8 @@ export function getLoginUrl(redirect?: string) {
   const { baseUrl } = config.frontend;
   //const backendUrl = encodeURIComponent(`${config.auth.backendUrl}${redirect ? `?redirect=${redirect}` : ''}`);
   const redirectUri = encodeURIComponent(`${baseUrl}/login${redirect || ''}`);
-  return `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=repo`;
+  // return `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=repo`;
+  return `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}`;
 }
 
 function getQueryArg(path: string, name: string): string | undefined {
