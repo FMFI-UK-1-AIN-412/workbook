@@ -6,6 +6,8 @@ import NewStructureExplorer from '@fmfi-uk-1-ain-412/structure-explorer';
 import '@fmfi-uk-1-ain-412/structure-explorer/dist/structure-explorer.css'
 import config from './config.json';
 import { CellContext } from './features/sheet/slice/logicContext';
+import EqvTransChecker from '@fmfi-uk-1-ain-412/eqv-trans-checker';
+import '@fmfi-uk-1-ain-412/eqv-trans-checker/dist/eqv-trans-checker.css'
 
 export interface PrepareResult {
   instance: any;
@@ -64,6 +66,12 @@ export const embeddedApps: EmeddedApp[] =
       typeName: 'structureExplorer',
       supportsProofs: false,
       ...StructureExplorer
+    },
+    {
+      name: 'Equivalent transformation checker',
+      typeName: 'eqvTransChecker',
+      supportsProofs: false,
+      ...EqvTransChecker
     },
   ];
 
