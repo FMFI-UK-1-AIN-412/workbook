@@ -38,6 +38,24 @@ interface EmeddedApp {
 export const embeddedApps: EmeddedApp[] =
   [
     {
+      name: 'Equivalent transformations checker',
+      typeName: 'eqvTransChecker',
+      supportsProofs: false,
+      ...EqvTransChecker
+    },
+    {
+      name: 'Formalization checker',
+      supportsProofs: false,
+      typeName: 'formalizationChecker',
+      ...FormalizationCheckerConf(config.embeddedApps.formalizationChecker.backendUrl)
+    },
+    {
+      name: 'Resolution editor',
+      supportsProofs: true,
+      typeName: 'resolutionEditor',
+      ...ResolutionEditor
+    },
+    {
       name: 'Structure explorer',
       typeName: 'newStructureExplorer',
       supportsProofs: false,
@@ -50,28 +68,10 @@ export const embeddedApps: EmeddedApp[] =
       ...TableauEditor
     },
     {
-      name: 'Resolution editor',
-      supportsProofs: true,
-      typeName: 'resolutionEditor',
-      ...ResolutionEditor
-    },
-    {
-      name: 'Formalization checker',
-      supportsProofs: false,
-      typeName: 'formalizationChecker',
-      ...FormalizationCheckerConf(config.embeddedApps.formalizationChecker.backendUrl)
-    },
-    {
       name: 'Old structure explorer',
       typeName: 'structureExplorer',
       supportsProofs: false,
       ...StructureExplorer
-    },
-    {
-      name: 'Equivalent transformation checker',
-      typeName: 'eqvTransChecker',
-      supportsProofs: false,
-      ...EqvTransChecker
     },
   ];
 
