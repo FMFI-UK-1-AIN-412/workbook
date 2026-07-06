@@ -19,7 +19,9 @@ export interface PopoverMenuProps {
 const UpdatingPopover = React.forwardRef<HTMLDivElement, PopoverProps>(
   ({ popper, children, show: _, ...props }, ref) => {
     useEffect(() => {
-      popper.scheduleUpdate();
+      if (popper && popper.scheduleUpdate) {
+        popper.scheduleUpdate();
+      }
     }, [popper, children]);
     return (
       <Popover ref={ref} {...props} className={`${props.className || ''}`}>

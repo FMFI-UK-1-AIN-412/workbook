@@ -6,6 +6,8 @@ import NewStructureExplorer from '@fmfi-uk-1-ain-412/structure-explorer';
 import '@fmfi-uk-1-ain-412/structure-explorer/dist/structure-explorer.css'
 import config from './config.json';
 import { CellContext } from './features/sheet/slice/logicContext';
+import EqvTransChecker from '@fmfi-uk-1-ain-412/eqv-trans-checker';
+import '@fmfi-uk-1-ain-412/eqv-trans-checker/dist/eqv-trans-checker.css'
 
 export interface PrepareResult {
   instance: any;
@@ -36,6 +38,24 @@ interface EmeddedApp {
 export const embeddedApps: EmeddedApp[] =
   [
     {
+      name: 'Equivalent transformations checker',
+      typeName: 'eqvTransChecker',
+      supportsProofs: false,
+      ...EqvTransChecker
+    },
+    {
+      name: 'Formalization checker',
+      supportsProofs: false,
+      typeName: 'formalizationChecker',
+      ...FormalizationCheckerConf(config.embeddedApps.formalizationChecker.backendUrl)
+    },
+    {
+      name: 'Resolution editor',
+      supportsProofs: true,
+      typeName: 'resolutionEditor',
+      ...ResolutionEditor
+    },
+    {
       name: 'Structure explorer',
       typeName: 'newStructureExplorer',
       supportsProofs: false,
@@ -46,18 +66,6 @@ export const embeddedApps: EmeddedApp[] =
       typeName: 'tableauEditor',
       supportsProofs: true,
       ...TableauEditor
-    },
-    {
-      name: 'Resolution editor',
-      supportsProofs: true,
-      typeName: 'resolutionEditor',
-      ...ResolutionEditor
-    },
-    {
-      name: 'Formalization checker',
-      supportsProofs: false,
-      typeName: 'formalizationChecker',
-      ...FormalizationCheckerConf(config.embeddedApps.formalizationChecker.backendUrl)
     },
     {
       name: 'Old structure explorer',
